@@ -1,0 +1,186 @@
+:root {
+    --color1: #E9EED9;
+    --color2: #CBD2A4;
+    --color3: #9A7E6F;
+    --color4: rgb(84, 71, 63);
+    --hover: rgba(84, 71, 63, 0.2);
+    --text: #54473F;
+}
+
+body {
+    background-color: #E9EED9;
+    /* Light background color */
+    height: 100vh;
+}
+
+.main {
+    display: flex;
+    justify-content: center;
+    /* Center horizontally */
+    font-family: Arial, sans-serif;
+    /* Font styling */
+}
+
+.top .btn-secondary {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    /* Soft shadow for depth */
+    transition: 300ms all ease;
+}
+
+
+.top .btn-secondary:hover {
+    box-shadow: 0px 5px 5px 0px #54473F;
+
+}
+
+.main .btn-primary {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    /* Soft shadow for depth */
+    transition: 300ms all ease;
+}
+
+
+.main  .btn-primary:hover {
+    box-shadow: 0px 5px 5px 0px #54473F;
+}
+
+
+.main .login-container {
+    max-width: 400px;
+    /* Set max width for the form */
+    padding: 30px;
+    /* Padding inside the form */
+    border-radius: 15px;
+    /* Rounded corners */
+    background-color: #CBD2A4;
+    /* Light greenish background */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    /* Soft shadow for depth */
+    transition: 300ms all ease;
+}
+
+.main .login-container:hover {
+    box-shadow: 0px 11px 4px -2px rgba(0, 0, 0, 0.76);
+}
+
+
+h2 {
+    margin-bottom: 20px;
+    /* Margin below heading */
+    font-weight: bold;
+    /* Bold heading */
+    color: #54473F;
+    /* Darker font color for the heading */
+}
+
+.form-control {
+    border-radius: 10px;
+    /* Rounded corners for input fields */
+    border: 1px solid #9A7E6F;
+    /* Border color */
+
+}
+
+.btn-primary {
+    background-color: #9A7E6F;
+    /* Custom primary color */
+    color: #E9EED9;
+    /* Text color */
+    border: none;
+    /* No border */
+    border-radius: 10px;
+    /* Rounded corners */
+}
+
+.btn-primary:hover {
+    background-color: #54473F;
+    /* Darker shade on hover */
+}
+
+.btn-secondary {
+    background-color: #CBD2A4;
+    /* Custom secondary color */
+    color: #54473F;
+    /* Text color */
+    border: none;
+    /* No border */
+    border-radius: 10px;
+    /* Rounded corners */
+}
+
+.btn-secondary:hover {
+    background-color: #9A7E6F;
+    /* Darker shade on hover */
+}
+
+.text-center a {
+    color: #54473F;
+    /* Link color */
+}
+
+/* customerDisplayCSs */
+
+.mainContainerCustomerDisplay .btn-secondary{
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: 300ms all ease;
+}
+
+.mainContainerCustomerDisplay .btn-secondary:hover{
+    box-shadow: 0px 5px 5px 0px #54473F;
+}
+
+.mainContainerCustomerDisplay .scrolling-wrapper {
+    display: flex;
+    overflow-x: auto;
+    padding: 10px;
+}
+
+.mainContainerCustomerDisplay .scrolling-wrapper .card {
+    min-width: 200px;
+    margin-right: 10px;
+    border-radius: 10px;
+    /* Rounded corners for cards */
+    background-color: #CBD2A4;
+    /* Light greenish background */
+    border: 1px solid #9A7E6F;
+    /* Custom border color */
+}
+
+/* table css */
+
+.mainContainerCustomerDisplay .table .thead th{
+    background-color: #CBD2A4;
+    color: black;
+    border: 1px solid #9A7E6F ;
+}
+
+.mainContainerCustomerDisplay .table {
+    background-color: #E9EED9;
+    border: 2px solid #9A7E6F;
+    /* Light background for the table */
+}
+
+.mainContainerCustomerDisplay .table-status-column {
+    margin-right: 30px;
+}
+
+.mainContainerCustomerDisplay .table-bordered td, .table-bordered th {
+    border: 1px solid #9A7E6F; /* Custom border color */
+  }
+
+.mainContainerCustomerDisplay .table td {
+    color: #54473F; /* Text color for better visibility */
+  }
+
+
+/* Custom styles for headings */
+.mainContainerCustomerDisplay h1 {
+    color: #54473F;
+    /* Darker color for main title */
+}
+
+.mainContainerCustomerDisplay h3 {
+    color: #9A7E6F;
+    /* Color for section headings */
+}
+

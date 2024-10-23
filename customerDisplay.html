@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Better Billiards</title>
+    <!-- Bootstrap CDN -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles/LoginStyles.css" />
+  </head>
+  <body>
+    <div class="mainContainerCustomerDisplay container full-height">
+      <!-- Heading -->
+      <div class="mt-4 d-flex justify-content-end">
+        <a href="LogIn.html" class="btn btn-secondary">Dashboard</a>
+      </div>
+      <div class="text-center mb-4">
+        <h1>Better Billiards</h1>
+        <h5>
+          <a
+            href="https://maps.google.com/?q=Better+Billiards+Address"
+            target="_blank"
+            class="text-primary"
+            >1234 Main St, City, Country</a
+          >
+        </h5>
+      </div>
+      
+      <!-- row -->
+      <div
+        class="row h-100 d-flex justify-content-center text-center"
+      >
+        <!-- Column 1: Table Status -->
+        <div class="col-md-5 mb-5 d-flex flex-column table-status-column">
+          <h3>Table Status</h3>
+          <div class="scrolling-wrapper">
+            <!-- Cards for Table Status -->
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Table 1</h5>
+                <p class="card-text">Status: Available</p>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Table 2</h5>
+                <p class="card-text">Status: Occupied</p>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Table 3</h5>
+                <p class="card-text">Status: Available</p>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Table 4</h5>
+                <p class="card-text">Status: Maintenance</p>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Table 5</h5>
+                <p class="card-text">Status: Occupied</p>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Table 6</h5>
+                <p class="card-text">Status: Available</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Customer Queueing -->
+        <div class="col-md-5 d-flex flex-column">
+          <h3>Customer Queueing</h3>
+          <!-- Table for Customer Queueing -->
+          <table class="table table-bordered">
+            <thead class="thead">
+              <tr>
+                <th>Customer Number</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>001</td>
+              </tr>
+              <tr>
+                <td>002</td>
+              </tr>
+              <tr>
+                <td>003</td>
+              </tr>
+              <tr>
+                <td>004</td>
+              </tr>
+              <tr>
+                <td>005</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>
