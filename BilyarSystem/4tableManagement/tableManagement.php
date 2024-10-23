@@ -30,13 +30,12 @@
       </div>
     </div>
 
-
-
     <div class="modal fade" id="timerModal" tabindex="-1" aria-labelledby="timerModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;"> <!-- Adjust max-width -->
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="timerModalLabel">Table Timer and Billing</h5>
+            <h5 class="modal-title tableNumber mx-3" id="timerModalLabel"></h5> <!-- Empty for dynamic content -->
+            <span class="badge bg-secondary status"></span> <!-- Empty for dynamic content -->
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
