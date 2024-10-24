@@ -86,10 +86,6 @@ function renderTableInfo(tables) {
   tableInfoBody.innerHTML = ""; // Clear existing rows
   const totalTables = tables.length; // Get the total number of tables from the fetched data
 
-  // Loop through the fetched table data and create rows
-  // <button class="btn btn-sm btn-danger delete-btn" data-table="${table.id}">Delete</button>
-  // <button class="btn btn-sm btn-warning edit-btn" data-table="${table.id}">Edit</button>
-
   tables.forEach((table) => {
     const row = `<tr id="tableRow-${table.id}">
                 <td>Table ${table.tableNumber}</td>

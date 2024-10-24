@@ -78,14 +78,19 @@
                       <input type="number" id="minutesInput" class="form-control" placeholder="Minutes"
                         aria-label="Minutes">
                     </div>
+                    <!-- Add Time Button -->
+                    <div class="col-auto">
+                      <button type="button" class="btn btn-success" id="addTimeButton">Add Time</button>
+                    </div>
                   </div>
                   <div class="row text-center">
                     <div class="col">
                       <p class="mb-0">Remaining Time</p>
-                      <span id="remainingTimeRegular">00:00:00</span> <!-- Changed ID -->
+                      <span id="remainingTimeRegular">00:00:00</span>
                     </div>
                   </div>
                 </div>
+
                 <div id="openTimeFields" class="mt-1 text-center" style="display:none;">
                   <p class="mb-0">Running Time</p>
                   <span id="runningTimeOpen">00:00:00</span>
@@ -124,8 +129,8 @@
           </div>
           <div class="modal-footer">
             <button id="startTimer" class="btn btn-success">Start Timer</button>
-            <button id="pauseTimer" class="btn btn-warning" style="display:none;">Pause Timer</button>
-            <button id="resumeTimer" class="btn btn-info" style="display:none;">Resume Timer</button>
+            <button id="pauseTimer" class="btn btn-warning">Pause Timer</button>
+            <button id="resumeTimer" class="btn btn-info">Resume Timer</button>
             <button id="stopTimer" class="btn btn-danger">Stop Timer</button>
           </div>
         </div>
