@@ -128,10 +128,10 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button id="startTimer" class="btn btn-success">Start Timer</button>
-            <button id="pauseTimer" class="btn btn-warning">Pause Timer</button>
-            <button id="resumeTimer" class="btn btn-info">Resume Timer</button>
-            <button id="stopTimer" class="btn btn-danger">Stop Timer</button>
+            <button id="startTimer" class="btn btn-success" disabled>Start Timer</button>
+            <button id="pauseTimer" class="btn btn-warning" disabled>Pause Timer</button>
+            <button id="resumeTimer" class="btn btn-info" disabled>Resume Timer</button>
+            <button id="stopTimer" class="btn btn-danger" disabled>Stop Timer</button>
           </div>
         </div>
       </div>

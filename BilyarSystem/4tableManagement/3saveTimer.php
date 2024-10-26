@@ -13,7 +13,7 @@ if (isset($data['id'])) {
 
     $updateSql = "UPDATE tables SET
                     timer_type = COALESCE(?, timer_type),
-                    start_time = COALESCE(?, end_time),
+                    start_time = COALESCE(?, start_time),
                     end_time = COALESCE(?, end_time),
                     pause_time = COALESCE(?, pause_time),
                     resume_time = COALESCE(?, resume_time),
