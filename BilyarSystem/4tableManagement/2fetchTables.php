@@ -12,7 +12,7 @@ $query = "SELECT
             total_seconds,
             total_time_used,
             IFNULL(pause_time, '') AS pause_time,
-            IFNULL(resume_time, '') AS resume_time,
+            IFNULL(cumulativePause, '0') AS cumulativePause,
             IFNULL(notes, 'Add Notes') AS notes
           FROM tables"; // Specify each column with IFNULL
 

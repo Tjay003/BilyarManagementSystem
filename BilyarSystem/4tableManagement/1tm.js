@@ -1,4 +1,3 @@
-
 const startTimerButton = document.getElementById("startTimer");
 const pauseTimerButton = document.getElementById("pauseTimer");
 const resumeTimerButton = document.getElementById("resumeTimer");
@@ -7,8 +6,6 @@ const addTimeButton = document.getElementById("addTimeButton");
 
 let timerId = null;
 let timer = null; // Store the timer interval
-let totalSeconds = 0; // Store total seconds for both timer types
-let isPaused = false; // Track if the timer is paused
 
 document.addEventListener("DOMContentLoaded", function () {
   fetchTables();
@@ -25,12 +22,13 @@ async function fetchTables() {
       const tableId = table.id;
       const tableNumber = table.tableNumber;
       const timerType = table.timer_type; // Timer type (regular or open time)
-      const remainingTime = table.remainingTime; // Remaining time for regular time
       const startTime = table.start_time; // Start time
       const endTime = table.end_time; // Expected end time
       const totalSeconds = table.total_seconds; // Total time used for open time
       const status = table.status; // Status (available, active, paused, finished)
+      const pauseTime = table.pause_time;
       const notes = table.notes;
+      const cumulativePause = table.cumulativePause;
 
       // Bootstrap card for each table
       const card = document.createElement("div");
@@ -51,7 +49,7 @@ async function fetchTables() {
                                 <strong>Timer Type:</strong> <span>${timerType}</span>
                             </div>
                             <div class="mb-2">
-                                <strong id="timeLabel" >Remaining Time:</strong><span id="timeStatus">                      
+                                <strong id="timeLabel" >Remaining Time: <span id="cardRemainingTime"></strong><span id="timeStatus">                      
                                 </span>
                             </div>
                             <div class="d-flex justify-content-between">
@@ -75,7 +73,9 @@ async function fetchTables() {
                             data-start-time="${startTime}"
                             data-end-time="${endTime}"
                             data-total-seconds="${totalSeconds}"
-                            data-notes="${notes}">
+                            data-notes="${notes}"
+                            data-pause-time="${pauseTime}"
+                            data-cumulative-pause="${cumulativePause}">      
                                 Expand
                             </button>
                         </div>
@@ -88,6 +88,7 @@ async function fetchTables() {
     // Now add the event listeners for the expand buttons
     document.querySelectorAll(".expand-btn").forEach((button) => {
       button.addEventListener("click", function () {
+        totalSeconds = 0;
         updateModal(this);
       });
     });
@@ -95,79 +96,173 @@ async function fetchTables() {
     console.error("Error fetching table data:", error);
   }
 }
-// still reviewing this shit
-function initializeTimer(startTime, endTime, totalSeconds, timerType, status) {
+//initializing the timer
+
+// timerDetails
+let cumulativePauseDuration = 0;
+let pauseTimeMillis = null;
+let pausedTime = null;
+let totalSeconds = 0; // Store total seconds for both timer types
+let isPaused = false; // Track if the timer is paused
+
+function initializeTimer(
+  startTime,
+  totalSeconds,
+  timerType,
+  pauseTime,
+  cumulativePause,
+  status
+) {
   clearInterval(timer); // Clear any existing intervals
 
-  // if its regular
-  if (timerType === "regular") {
-    totalSeconds = parseInt(totalSeconds); // set the total seconds and make it in int
+  isPaused = status === "paused"; // Track if the timer is paused
+  console.log("isPaused value", isPaused);
+  // just checkingwhat we passed
+  console.log("cumulativePause that is pass to the timer: ", cumulativePause);
+  // Ensure cumulativePause is an integer before using it
+  cumulativePauseDuration = parseInt(cumulativePause, 10) || 0;
+  console.log(
+    "cumulativePause that is passed to the timer: ",
+    cumulativePauseDuration
+  );
 
+  pausedTime = pauseTime;
+  console.log("pausedTime:", pausedTime);
+
+  //convert the startTime and convert into millis for it to used later
+  let startTimeMillis = new Date(startTime).getTime();
+  console.log("start time Millis: ", startTimeMillis);
+
+  // if pauseTime has a value, will store it inside the pauseTimeMillis GlobalVar
+  // then convert it into millis to use later
+  pauseTimeMillis = pausedTime ? new Date(pausedTime).getTime() : 0;
+  // check if its converted
+  console.log("pause time Millis: ", pauseTimeMillis);
+
+  // Define a function to get the elapsed time for open time calculation
+  function getElapsedTime() {
     let currentTime = new Date().getTime();
-    let startTimeMillis = new Date(startTime).getTime();
-    let elapsedSeconds = Math.floor((currentTime - startTimeMillis) / 1000);
-    let remainingSeconds = totalSeconds - elapsedSeconds;
+    console.log("Values before calculation inside getElapsedTime");
+    console.log("currentTime: ", currentTime);
+    console.log("startTimeMillis: ", startTimeMillis);
+    console.log(
+      "cumulativePauseDuration in milliseconds: ",
+      cumulativePauseDuration
+    );
 
-    console.log("currentDate", currentTime);
-    console.log("startTime", startTimeMillis);
-    console.log("elapsedSeconds", elapsedSeconds);
+    return Math.floor(
+      (currentTime - startTimeMillis - cumulativePauseDuration) / 1000
+    );
+  }
+
+  // Regular Time Countdown
+  if (timerType === "regular") {
+    totalSeconds = parseInt(totalSeconds);
+    let remainingSeconds = totalSeconds - getElapsedTime();
     console.log("remainingSeconds", remainingSeconds);
 
     if (remainingSeconds <= 0) {
       remainingSeconds = 0;
       updateRemainingTime(remainingSeconds, "regular");
-      return;
+      alert("Time is finished!");
+      return; // Stop execution once time is finished
     }
-    // startCount for regular Time
+
     timer = setInterval(() => {
-      if (remainingSeconds <= 0) {
-        clearInterval(timer);
-        timer = null;
-      } else {
-        updateRemainingTime(remainingSeconds--, "regular");
+      if (!isPaused) {
+        if (remainingSeconds <= 0) {
+          clearInterval(timer);
+          timer = null;
+          remainingSeconds = 0; // Ensure it stays at 0
+          updateRemainingTime(remainingSeconds, "regular");
+          alert("Time is finished!");
+        } else {
+          updateRemainingTime(remainingSeconds--, "regular");
+        }
       }
     }, 1000);
-
-    //open time
+    // Open Time Count-up
   } else if (timerType === "open") {
-    let currentTime = new Date().getTime();
-    let startTimeMillis = new Date(startTime).getTime();
-    let elapsedSeconds = Math.floor((currentTime - startTimeMillis) / 1000);
+    let elapsedSeconds = getElapsedTime();
 
-    console.log("Current ELAPSED SECONDS I SUPPOSED", elapsedSeconds);
     timer = setInterval(() => {
-      elapsedSeconds++;
-      updateRemainingTime(elapsedSeconds, "open");
+      if (!isPaused) {
+        elapsedSeconds++;
+        updateRemainingTime(elapsedSeconds, "open");
+      }
     }, 1000);
   }
 }
 
-// // Function to start open time
-// function startOpenTime() {
-//   totalSeconds = 0;
-//   isPaused = false; // Ensure the timer starts running
+// Pause Timer
+pauseTimerButton.addEventListener("click", function () {
+  console.log("Pause Clicked!");
+  const localTimestamp = new Date(); // Current local time
+  const options = { timeZone: "Asia/Singapore", hour12: false }; // Set options for Singapore timezone
 
-//   timer = setInterval(() => {
-//     if (!isPaused) {
-//       totalSeconds++;
-//       updateRemainingTime(totalSeconds, "open");
-//     }
-//   }, 1000);
-// }
+  // Create a formatted string for the timestamp
+  const pauseTime = localTimestamp
+    .toLocaleString("sv-SE", options) // 'sv-SE' gives YYYY-MM-DD format
+    .replace(" ", " ") // Ensure a single space
+    .slice(0, 19);
 
-// Function to update the remaining time display
+  saveTimerSession({
+    id: timerId, // Use the global sessionId
+    pause_time: pauseTime,
+    status: "paused",
+  });
+});
+
+// Event listener for resume button
+resumeTimerButton.addEventListener("click", function () {
+  console.log("resume clicked!");
+  if (isPaused) {
+    isPaused = false;
+
+    let currentTime = new Date().getTime(); // get currentTime in milliseconds
+    let pauseDuration = currentTime - pauseTimeMillis;
+    console.log("before adding values", pauseDuration, cumulativePauseDuration);
+    cumulativePauseDuration += parseInt(pauseDuration, 10); // Convert to integer
+
+    pauseTimeMillis = null;
+
+    saveTimerSession({
+      id: timerId, // Use the global sessionId
+      status: "active",
+      pause_time: "reset", // Reset pause_time in the database
+      cumulativePause: parseInt(cumulativePauseDuration, 10), // Convert to seconds
+    });
+  }
+});
+
 function updateRemainingTime(seconds, type) {
-  // Default value in case of NaN or invalid seconds
+  // Default to 0 if seconds is NaN or null
   const validSeconds = isNaN(seconds) || seconds === null ? 0 : seconds;
-  // Format the time using the valid seconds
   const formattedTime = formatTime(validSeconds);
-  
+
+  // Update modal display
   if (type === "regular") {
-    const timeDisplay = document.getElementById("remainingTimeRegular");
-    timeDisplay.textContent = formattedTime; // Update the display
+    const modalTimeDisplay = document.getElementById("remainingTimeRegular");
+    if (modalTimeDisplay) {
+      modalTimeDisplay.textContent = formattedTime;
+    }
+
+    // Update card display
+    const cardTimeDisplay = document.getElementById("cardRemainingTimeRegular");
+    if (cardTimeDisplay) {
+      cardTimeDisplay.textContent = formattedTime;
+    }
   } else if (type === "open") {
-    const timeDisplay = document.getElementById("runningTimeOpen");
-    timeDisplay.textContent = formattedTime; // Update the display
+    const modalTimeDisplay = document.getElementById("runningTimeOpen");
+    if (modalTimeDisplay) {
+      modalTimeDisplay.textContent = formattedTime;
+    }
+
+    // Update card display
+    const cardTimeDisplay = document.getElementById("cardRunningTimeOpen");
+    if (cardTimeDisplay) {
+      cardTimeDisplay.textContent = formattedTime;
+    }
   }
 }
 
@@ -191,7 +286,10 @@ function updateModal(button) {
   const endTime = button.getAttribute("data-end-time");
   const timerType = button.getAttribute("data-timer-type");
   const totalSeconds = button.getAttribute("data-total-seconds");
-  const formattedStartTime = formatToAMPM(startTime); 
+  const pauseTime = button.getAttribute("data-pause-time");
+  const cumulativePause = button.getAttribute("data-cumulative-pause");
+
+  const formattedStartTime = formatToAMPM(startTime);
   // Populate the modal header with the current values
   document.querySelector(
     ".modal-title.tableNumber"
@@ -200,7 +298,7 @@ function updateModal(button) {
   document.querySelector("#startTime").textContent = formattedStartTime;
   document.querySelector("#noteInput").textContent = notes;
   document.querySelector("#endTime").textContent = endTime;
-  
+
   // Set the radio button based on timerType
   const regularTimeRadio = document.getElementById("regularTime");
   const openTimeRadio = document.getElementById("openTime");
@@ -211,16 +309,22 @@ function updateModal(button) {
     openTimeRadio.checked = true; // Check the open time radio button
   }
 
-   // Set the radio button based on timer type
-   const timerTypeRadios = document.querySelectorAll('input[name="timerType"]');
-   timerTypeRadios.forEach((radio) => {
-     if (radio.value === timerType) {
-       radio.checked = true;
-     }
-   });
+  // Set the radio button based on timer type
+  const timerTypeRadios = document.querySelectorAll('input[name="timerType"]');
+  timerTypeRadios.forEach((radio) => {
+    if (radio.value === timerType) {
+      radio.checked = true;
+    }
+  });
 
-  initializeTimer(startTime, endTime, totalSeconds, timerType, status);
-
+  initializeTimer(
+    startTime,
+    totalSeconds,
+    timerType,
+    pauseTime,
+    cumulativePause,
+    status
+  );
   manageButtonStates(status);
   manageTimerTypeFields();
 }
@@ -285,7 +389,7 @@ async function saveTimerSession(sessionData) {
     });
     const data = await response.json();
     console.log("Success", data);
-    alert("timer has been saved");
+    // alert("timer has been saved");
 
     await fetchTables();
     updateModalContentIfOpen();
@@ -296,34 +400,12 @@ async function saveTimerSession(sessionData) {
 
 // Start Timer
 startTimerButton.addEventListener("click", function () {
+  console.log("startTimerButton Click");
   if (timer !== null) {
     clearInterval(timer); // Stop any previous running timer
   }
-
-  // Check if Regular Time is selected
-  if (document.getElementById("regularTime").checked) {
-    const hours = parseInt(document.getElementById("hoursInput").value) || 0;
-    const minutes =
-      parseInt(document.getElementById("minutesInput").value) || 0;
-
-    totalSeconds = hours * 3600 + minutes * 60; // Calculate totalSeconds for regular time
-    updateRemainingTime(totalSeconds, "regular");
-    isPaused = false;
-
-    timer = setInterval(() => {
-      if (totalSeconds > 0 && !isPaused) {
-        totalSeconds--;
-        updateRemainingTime(totalSeconds, "regular");
-      } else if (totalSeconds === 0) {
-        clearInterval(timer);
-        timer = null;
-        alert("Time is finished!");
-      }
-    }, 1000);
-  } else {
-    // Start open time
-    startOpenTime();
-  }
+  // if start means its paused thats why isPaused is false
+  isPaused = false;
 
   const localTimestamp = new Date(); // Current local time
   const options = { timeZone: "Asia/Singapore", hour12: false }; // Set options for Singapore timezone
@@ -349,43 +431,6 @@ startTimerButton.addEventListener("click", function () {
   saveTimerSession(sessionData);
 });
 
-// Function to start open time
-function startOpenTime() {
-  totalSeconds = 0;
-  isPaused = false; // Ensure the timer starts running
-
-  timer = setInterval(() => {
-    if (!isPaused) {
-      totalSeconds++;
-      updateRemainingTime(totalSeconds, "open");
-    }
-  }, 1000);
-}
-
-// Pause Timer
-pauseTimerButton.addEventListener("click", function () {
-  isPaused = true;
-  const pauseTime = new Date().toISOString();
-
-  saveTimerSession({
-    id: timerId, // Use the global sessionId
-    pause_time: pauseTime,
-    status: "paused",
-  });
-});
-
-// Resume Timer
-resumeTimerButton.addEventListener("click", function () {
-  isPaused = false;
-  const resumeTime = new Date().toISOString();
-
-  saveTimerSession({
-    id: timerId, // Use the global sessionId
-    resume_time: resumeTime,
-    status: "active",
-  });
-});
-
 // Stop Timer
 stopTimerButton.addEventListener("click", function () {
   clearInterval(timer);
@@ -398,6 +443,7 @@ stopTimerButton.addEventListener("click", function () {
   totalSeconds = "0"; // Reset total seconds
   startTime = "Na";
   endTime = "Na";
+  cumulativePauseDuration = "0";
   notes = "";
 
   // After resetting values, then update the UI
@@ -411,6 +457,8 @@ stopTimerButton.addEventListener("click", function () {
     end_time: endTime,
     total_seconds: totalSeconds,
     status: "available",
+    pause_time: "reset",
+    cumulativePause: cumulativePauseDuration,
     notes: notes,
   });
 });
@@ -433,7 +481,9 @@ timerTypeRadios.forEach((radio) => {
 
 // Function to manage the visibility of timer type fields
 function manageTimerTypeFields() {
-  const selectedTimerType = document.querySelector('input[name="timerType"]:checked').value;
+  const selectedTimerType = document.querySelector(
+    'input[name="timerType"]:checked'
+  ).value;
   if (selectedTimerType === "regular") {
     regularTimeFields.style.display = "block"; // Show regular time fields
     openTimeFields.style.display = "none"; // Hide open time fields
@@ -444,35 +494,51 @@ function manageTimerTypeFields() {
 }
 
 // Initial display setting based on checked radio button when modal is opened
-document.addEventListener("DOMContentLoaded", function() {
-  const checkedRadio = document.querySelector('input[name="timerType"]:checked');
+document.addEventListener("DOMContentLoaded", function () {
+  const checkedRadio = document.querySelector(
+    'input[name="timerType"]:checked'
+  );
   if (checkedRadio) {
     manageTimerTypeFields(); // Ensure visibility is set correctly on page load
   }
 });
-
-// Add event listener for Add Time button
+// Add Time
 addTimeButton.addEventListener("click", function () {
-  console.log("add time gets clicked");
-  if (document.getElementById("regularTime").checked) {
-    const additionalHours =
-      parseInt(document.getElementById("hoursInput").value) || 0;
-    const additionalMinutes =
-      parseInt(document.getElementById("minutesInput").value) || 0;
+  console.log("Add Time button clicked");
 
+  if (document.getElementById("regularTime").checked) {
+    const hoursInput = document.getElementById("hoursInput").value;
+    const minutesInput = document.getElementById("minutesInput").value;
+
+    // Check if both inputs are empty or zero
+    if (
+      (!hoursInput && !minutesInput) ||
+      (parseInt(hoursInput) === 0 && parseInt(minutesInput) === 0)
+    ) {
+      alert("Please input a valid number for either hours or minutes.");
+      console.log("addTime");
+      return; // Stop the function if no valid input is provided
+    }
+
+    // Ensure additional time values are integers
+    const additionalHours = parseInt(hoursInput) || 0;
+    const additionalMinutes = parseInt(minutesInput) || 0;
     const additionalTimeInSeconds =
       additionalHours * 3600 + additionalMinutes * 60;
 
-    // Add the additional time to the total seconds
-    totalSeconds += additionalTimeInSeconds;
+    // Add the additional time to totalSeconds and ensure it's an integer
+    totalSeconds = parseInt(totalSeconds + additionalTimeInSeconds, 10);
 
+    // Save the updated totalSeconds and update display
     saveTimerSession({
-      id: timerId, // Use the global sessionId
+      id: timerId,
       timer_type: "regular",
-      total_seconds: totalSeconds,
+      total_seconds: totalSeconds.toString(), // Convert to string for consistent storage
     });
-    // Update the remaining time display
-    updateRemainingTime(totalSeconds, "regular");
+
+    // Clear input fields after adding time
+    document.getElementById("hoursInput").value = "";
+    document.getElementById("minutesInput").value = "";
   }
 });
 
@@ -499,7 +565,7 @@ function formatToAMPM(dateTimeString) {
   const minutes = date.getMinutes();
 
   // Determine AM or PM suffix
-  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const ampm = hours >= 12 ? "PM" : "AM";
 
   // Convert hours from 24-hour to 12-hour format
   hours = hours % 12;
