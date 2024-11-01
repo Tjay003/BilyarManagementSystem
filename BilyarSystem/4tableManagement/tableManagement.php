@@ -86,14 +86,14 @@
                   <div class="row text-center">
                     <div class="col">
                       <p class="mb-0">Remaining Time</p>
-                      <span id="remainingTimeRegular">00:00:00</span>
+                      <span data-type="remainingTimeRegular">00:00:00</span>
                     </div>
                   </div>
                 </div>
 
                 <div id="openTimeFields" class="mt-1 text-center" style="display:none;">
                   <p class="mb-0">Running Time</p>
-                  <span id="runningTimeOpen">00:00:00</span>
+                  <span data-type="runningTimeOpen">00:00:00</span>
                 </div>
 
                 <div class="mt-1">
@@ -132,6 +132,7 @@
             <button id="pauseTimer" class="btn btn-warning" disabled>Pause Timer</button>
             <button id="resumeTimer" class="btn btn-info" disabled>Resume Timer</button>
             <button id="stopTimer" class="btn btn-danger" disabled>Stop Timer</button>
+            <button id="saveTimer" class="btn btn-success" disabled>Save Timer</button>
           </div>
         </div>
       </div>
