@@ -12,6 +12,12 @@ const resumeTimerButton = document.getElementById("resumeTimer");
 const stopTimerButton = document.getElementById("stopTimer");
 const addTimeButton = document.getElementById("addTimeButton");
 
+// Function to toggle timer type
+const timerTypeRadios = document.querySelectorAll('input[name="timerType"]');
+const regularTimeFields = document.getElementById("regularTimeFields"); // Replace with actual ID
+const openTimeFields = document.getElementById("openTimeFields"); // Replace with actual ID
+
+
 async function fetchTables() {
   try {
     const response = await fetch("2fetchTables.php");
@@ -168,7 +174,7 @@ function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulati
   //just making it into integer para sure haha
   let cumulativePauseDuration = parseInt(cumulativePause, 10) || 0;
   cumulativePauseDurations.set(tableId, cumulativePauseDuration);
-  console.log("cpd: ",cumulativePauseDuration);
+  // console.log("cpd: ",cumulativePauseDuration);
 
   // Store the pause start time if the timer is currently paused
   pauseTimeMillisMap.set(tableId, pauseTime ? new Date(pauseTime).getTime() : 0);
@@ -179,56 +185,67 @@ function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulati
     cumulativePauseDuration += currentPauseDuration;
   }
 
-
   let elapsedTime = getElapsedTime(new Date(startTime).getTime(), cumulativePauseDuration);
   console.log("Total Seconds", totalSeconds);
+
+  let remainingSeconds;
+  if ( status == "available") {
+    remainingSeconds = parseInt(totalSeconds);
+    updateRemainingTime(remainingSeconds, tableId, "regular");
+    updateRemainingTimeCard(remainingSeconds, tableId, "regular");
+  } else {
+    remainingSeconds = timerType === "regular" ? parseInt(totalSeconds) - elapsedTime : elapsedTime;   console.log("RemainingSeconds after calculation", remainingSeconds);
+  }
+
   // Initialize remainingSeconds based on timer type and elapsed time
-  let remainingSeconds = timerType === "regular" ? parseInt(totalSeconds) - elapsedTime : elapsedTime;
-  console.log("RemainingSeconds after calculation", remainingSeconds)
   remainingSecondsMap.set(tableId, remainingSeconds);
-
-
   // Initialize the totalSecondsMap
   totalSecondsMap.set(tableId, parseInt(totalSeconds)); // Store the initial totalSeconds
 
-  // Set interval for each tableId
-  const interval = setInterval(() => {
-    const isPaused = pausedTimers.get(tableId);
-    const isFinished = finishedTimers.get(tableId);
-    const currentStatus  = statusMap.get(tableId);
-  
-    // Only update if the timer is not paused or finished
-    if (!isPaused && !isFinished && currentStatus !== "available") {
-      let currentRemainingSeconds = remainingSecondsMap.get(tableId);
-      
-      if (timerType === "regular") {
-        if (currentRemainingSeconds <= 0) {
-          finishTimer(tableId);
-        } else {
-          console.log("REMAINING SECONDS RUNNING", currentRemainingSeconds);
-          // Update the remaining seconds and display
-          remainingSecondsMap.set(tableId, currentRemainingSeconds - 1);
-          updateRemainingTime(currentRemainingSeconds - 1, tableId, "regular");
-          updateRemainingTimeCard(currentRemainingSeconds - 1, tableId, "regular");
+  if (status !== "available"){
+      // Set interval for each tableId
+      const interval = setInterval(() => {
+        const isPaused = pausedTimers.get(tableId);
+        const isFinished = finishedTimers.get(tableId);
+        const currentStatus  = statusMap.get(tableId);
+    
+      // Only update if the timer is not paused or finished
+      if (!isPaused && !isFinished && currentStatus !== "available") {
+        let currentRemainingSeconds = remainingSecondsMap.get(tableId);
+        
+        if (timerType === "regular") {
+          if (currentRemainingSeconds <= 0) {
+            finishTimer(tableId);
+          } else {
+            console.log("REMAINING SECONDS RUNNING", currentRemainingSeconds);
+            // Update the remaining seconds and display
+            remainingSecondsMap.set(tableId, currentRemainingSeconds - 1);
+            updateRemainingTime(currentRemainingSeconds - 1, tableId, "regular");
+            updateRemainingTimeCard(currentRemainingSeconds - 1, tableId, "regular");
+          }
+        } else if (timerType === "open") {
+          remainingSecondsMap.set(tableId, currentRemainingSeconds + 1);
+          const timeUsed = remainingSecondsMap.get(tableId);
+          console.log("RUNNING SECONDS (OPEN TIME):", timeUsed);
+          updateRemainingTime(timeUsed + 1, tableId, "open");
+          updateRemainingTimeCard(timeUsed + 1, tableId, "open");
+          if (timeUsed % 5 === 0) {
+            const price = calculateOpenTimePrice(timeUsed);
+            addBillingLogOpenTime(tableId, price);
+          }
         }
-      } else if (timerType === "open") {
-        remainingSecondsMap.set(tableId, currentRemainingSeconds + 1);
-        updateRemainingTime(currentRemainingSeconds + 1, tableId, "open");
-        updateRemainingTimeCard(currentRemainingSeconds + 1, tableId, "open");
+      } else {
+        // Optionally update the display to show the paused time
+        let currentRemainingSeconds = remainingSecondsMap.get(tableId);
+        updateRemainingTime(currentRemainingSeconds, tableId, "regular");
+        updateRemainingTimeCard(currentRemainingSeconds, tableId, "regular");
       }
-    } else {
-      // Optionally update the display to show the paused time
-      let currentRemainingSeconds = remainingSecondsMap.get(tableId);
-      updateRemainingTime(currentRemainingSeconds, tableId, "regular");
-      updateRemainingTimeCard(currentRemainingSeconds, tableId, "regular");
+    }, 1000);
+    // Store the interval in the map for future reference
+    timerIntervals.set(tableId, interval);
     }
-  }, 1000);
-  
 
-  // Store the interval in the map for future reference
-  timerIntervals.set(tableId, interval);
 }
-
 
 function getElapsedTime(startTimeMillis, cumulativePauseDuration) {
   let currentTime = new Date().getTime();
@@ -262,39 +279,6 @@ pauseTimerButton.addEventListener("click", function () {
   });
 });
 
-
-// Event listener for resume button
-resumeTimerButton.addEventListener("click", function () {
-  console.log("resume clicked!");
-
-  // Check if this timer is currently paused
-  if (pausedTimers.get(timerId)) {
-    const currentTime = new Date().getTime();
-    const pauseStart = pauseTimeMillisMap.get(timerId); // Get stored pause start time
-
-
-    // Calculate this pause's duration
-    const pauseDuration = currentTime - pauseStart;
-
-    let cumulativePause = cumulativePauseDurations.get(timerId) || 0;
-    cumulativePause += pauseDuration; // add the recent pause duration
-    cumulativePauseDurations.set(timerId, cumulativePause);
-
-    // clear the pause state for this timer
-    pausedTimers.set(timerId, false);
-    pauseTimeMillisMap.set(timerId, 0);
-    
-    console.log("Updated cumulative pause duration:", cumulativePause);
-
-    // Save updated session details, resetting the pause_time and updating the status to active
-    saveTimerSession({
-      id: timerId, // Use the timer's ID for session tracking
-      status: "active",
-      pause_time: "reset", // Indicate to reset pause_time in the database
-      cumulativePause: parseInt(cumulativePause, 10), // Convert to seconds
-    });
-  }
-});
 
 function finishTimer(tableId) {
   console.log("Timer finished for table:", tableId);
@@ -380,7 +364,6 @@ function formatTime(seconds) {
   return `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`;
 }
 
-
 // Function to update the modal content
 function updateModal(button) {
   timerId = button.getAttribute("data-id");
@@ -407,6 +390,7 @@ function updateModal(button) {
   // Dynamically assign unique IDs based on the timer ID
   document.querySelector("[data-type='remainingTimeRegular']").id = `remainingTimeRegular-${timerId}`;
   document.querySelector("[data-type='runningTimeOpen']").id = `runningTimeOpen-${timerId}`;
+  document.querySelector("[data-type='totalBillDisplay']").id = `totalUnpaidDisplay-${timerId}`;
   
   // Set the radio button based on timerType
   const regularTimeRadio = document.getElementById("regularTime");
@@ -438,6 +422,7 @@ function updateModal(button) {
   );
   manageButtonStates(status);
   manageTimerTypeFields();
+  fetchBillingLogs(timerId);
 }
 
 // Start Timer
@@ -475,6 +460,84 @@ startTimerButton.addEventListener("click", function () {
   saveTimerSession(sessionData);
 });
 
+// Event listener for Stop Timer
+stopTimerButton.addEventListener("click", function () {
+  console.log("Stop Timer Clicked!");
+
+  // Clear the interval for this specific timer
+  if (timerIntervals.has(timerId)) {
+    clearInterval(timerIntervals.get(timerId));
+    timerIntervals.delete(timerId); // Remove timer from the map
+  }
+
+  // Reset all state values for this timer
+  pausedTimers.set(timerId, false); // Reset paused state
+  remainingSecondsMap.set(timerId, 0); // Set remaining seconds to 0
+  totalSecondsMap.set(timerId, 0); // Reset total seconds
+  cumulativePauseDurations.set(timerId, 0); // Reset cumulative pause duration
+  pauseTimeMillisMap.set(timerId, 0); // Reset pause time
+
+  // Mark the timer as finished
+  finishedTimers.set(timerId, true); // Mark as finished
+  statusMap.set(timerId, "available"); // Set status to available
+  
+  // Update the UI to show the timer reset state
+  updateRemainingTime(0, timerId, "regular"); // Set display to 0 for the specific timer
+  updateRemainingTimeCard(0, timerId, "regular"); // Also update the card display if needed
+  updateRemainingTime(0, timerId, "open"); // Set display to 0 for the specific timer
+  updateRemainingTimeCard(0, timerId, "open"); // Also update the card display if needed
+
+  //clearing the billingLogs
+  // Function to clear billing logs in the UI
+  clearBillingLogsUI(timerId);
+  clearBillingLogsDatabase(timerId);
+  // Save session details with reset values to the database
+  saveTimerSession({
+    id: timerId,
+    start_time: "Na", // Clear start time
+    end_time: "Na", // Clear end time
+    total_seconds: "0", // Set total seconds to 0
+    status: "available", // Update status to available
+    pause_time: "reset", // Reset pause time
+    cumulativePause: 0, // Reset cumulative pause duration
+    notes: "", // Clear notes or set as needed
+  });
+  
+  console.log("Timer reset and session saved.");
+});
+
+// Event listener for resume button
+resumeTimerButton.addEventListener("click", function () {
+  console.log("resume clicked!");
+
+  // Check if this timer is currently paused
+  if (pausedTimers.get(timerId)) {
+    const currentTime = new Date().getTime();
+    const pauseStart = pauseTimeMillisMap.get(timerId); // Get stored pause start time
+
+
+    // Calculate this pause's duration
+    const pauseDuration = currentTime - pauseStart;
+
+    let cumulativePause = cumulativePauseDurations.get(timerId) || 0;
+    cumulativePause += pauseDuration; // add the recent pause duration
+    cumulativePauseDurations.set(timerId, cumulativePause);
+
+    // clear the pause state for this timer
+    pausedTimers.set(timerId, false);
+    pauseTimeMillisMap.set(timerId, 0);
+    
+    console.log("Updated cumulative pause duration:", cumulativePause);
+
+    // Save updated session details, resetting the pause_time and updating the status to active
+    saveTimerSession({
+      id: timerId, // Use the timer's ID for session tracking
+      status: "active",
+      pause_time: "reset", // Indicate to reset pause_time in the database
+      cumulativePause: parseInt(cumulativePause, 10), // Convert to seconds
+    });
+  }
+});
 
 addTimeButton.addEventListener("click", function () {
   console.log("Add Time button clicked");
@@ -505,6 +568,7 @@ addTimeButton.addEventListener("click", function () {
 
     // add the additional time to totalSeconds
     currentTotalSeconds += additionalTimeInSeconds;
+  
 
     //set the new currentTotalSeconds to the totalSecondsMap
     totalSecondsMap.set(timerId, currentTotalSeconds);
@@ -530,62 +594,16 @@ addTimeButton.addEventListener("click", function () {
     // Clear input fields after adding time
     document.getElementById("hoursInput").value = "";
     document.getElementById("minutesInput").value = "";
+
+    // Generate the billing log entry
+    addBillingLogEntry(additionalTimeInSeconds);
   }
 });
-
-
-// Event listener for Stop Timer
-stopTimerButton.addEventListener("click", function () {
-  console.log("Stop Timer Clicked!");
-
-  // Clear the interval for this specific timer
-  if (timerIntervals.has(timerId)) {
-    clearInterval(timerIntervals.get(timerId));
-    timerIntervals.delete(timerId); // Remove timer from the map
-  }
-
-  // Reset all state values for this timer
-  pausedTimers.set(timerId, false); // Reset paused state
-  remainingSecondsMap.set(timerId, 0); // Set remaining seconds to 0
-  totalSecondsMap.set(timerId, 0); // Reset total seconds
-  cumulativePauseDurations.set(timerId, 0); // Reset cumulative pause duration
-  pauseTimeMillisMap.set(timerId, 0); // Reset pause time
-
-  // Mark the timer as finished
-  finishedTimers.set(timerId, true); // Mark as finished
-  statusMap.set(timerId, "available"); // Set status to available
-  
-  // Update the UI to show the timer reset state
-  updateRemainingTime(0, timerId, "regular"); // Set display to 0 for the specific timer
-  updateRemainingTimeCard(0, timerId, "regular"); // Also update the card display if needed
-  updateRemainingTime(0, timerId, "open"); // Set display to 0 for the specific timer
-  updateRemainingTimeCard(0, timerId, "open"); // Also update the card display if needed
-
-  // Save session details with reset values to the database
-  saveTimerSession({
-    id: timerId,
-    start_time: "Na", // Clear start time
-    end_time: "Na", // Clear end time
-    total_seconds: "0", // Set total seconds to 0
-    status: "available", // Update status to available
-    pause_time: "reset", // Reset pause time
-    cumulativePause: 0, // Reset cumulative pause duration
-    notes: "", // Clear notes or set as needed
-  });
-  
-  console.log("Timer reset and session saved.");
-});
-
 
 // Pad single digits with leading zeros
 function pad(num) {
   return String(num).padStart(2, "0");
 }
-
-// Function to toggle timer type
-const timerTypeRadios = document.querySelectorAll('input[name="timerType"]');
-const regularTimeFields = document.getElementById("regularTimeFields"); // Replace with actual ID
-const openTimeFields = document.getElementById("openTimeFields"); // Replace with actual ID
 
 timerTypeRadios.forEach((radio) => {
   radio.addEventListener("change", function () {
@@ -641,13 +659,12 @@ function formatToAMPM(dateTimeString) {
   return formattedTime;
 }
 
-
-
 function manageButtonStates(status) {
   const startButton = document.getElementById("startTimer");
   const pauseButton = document.getElementById("pauseTimer");
   const resumeButton = document.getElementById("resumeTimer");
   const stopButton = document.getElementById("stopTimer");
+  const saveTimer = document.getElementById("saveTimer");
 
   const regularTimeRadio = document.getElementById("regularTime");
   const openTimeRadio = document.getElementById("openTime");
@@ -658,6 +675,7 @@ function manageButtonStates(status) {
     pauseButton.disabled = false; // Enable pause
     resumeButton.disabled = true; // Cannot resume if already active
     stopButton.disabled = false; // Enable stop
+    saveTimer.disabled = false; // Enable stop
     regularTimeRadio.disabled = true;
     openTimeRadio.disabled = true;
 
@@ -666,6 +684,7 @@ function manageButtonStates(status) {
     pauseButton.disabled = true; // Disable pause
     resumeButton.disabled = false; // Enable resume
     stopButton.disabled = false; // Enable stop
+    saveTimer.disabled = false; // Enable stop
     regularTimeRadio.disabled = true;
     openTimeRadio.disabled = true;
     
@@ -682,6 +701,7 @@ function manageButtonStates(status) {
     pauseButton.disabled = false; // Enable pause
     resumeButton.disabled = true; // Cannot resume if already active
     stopButton.disabled = false; // Enable stop
+    saveTimer.disabled = false; // Enable stop
     regularTimeRadio.disabled = true;
     openTimeRadio.disabled = true;
   }
@@ -711,3 +731,376 @@ document.addEventListener("DOMContentLoaded", function () {
     manageTimerTypeFields(); // Ensure visibility is set correctly on page load
   }
 });
+
+
+//BILLING LOGS SECTION
+
+function addBillingLogOpenTime(tableId, price) {
+    const localTimestamp = new Date(); // Current local time
+    const options = { timeZone: "Asia/Singapore", hour12: false }; // Set options for Singapore timezone
+  
+    // Create a formatted string for the timestamp
+    const timesStampForDb = localTimestamp
+      .toLocaleString("sv-SE", options) // 'sv-SE' gives YYYY-MM-DD format
+      .replace(" ", " ") // Ensure a single space
+      .slice(0, 19);
+
+    saveBillingLogsOpenTime([{
+      timer_id: tableId,
+      timestamp: timesStampForDb,
+      price: price,
+      paid: false
+    }]);
+   
+}
+
+//function to save shit
+async function saveBillingLogsOpenTime(logs) {
+  console.log("Session Data that is going to be sent for Open Time: ", logs);
+  try {
+    const response = await fetch("9savingOBLogs.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(logs),
+    });
+    const data = await response.json();
+    console.log("Success", data);
+    await fetchTables();
+    await fetchBillingLogs(logs[0].timer_id); // Add this line to refresh logs immediately
+  } catch (error) {
+    console.log("Error", error);
+  }
+}
+
+// BILLINGLOGS
+function addBillingLogEntry(additionalTimeInSeconds){
+  const price = calculatePrice(additionalTimeInSeconds); // Calculate the price for the added time
+
+  const localTimestamp = new Date(); // Current local time
+  const options = { timeZone: "Asia/Singapore", hour12: false }; // Set options for Singapore timezone
+
+  // Create a formatted string for the timestamp
+  const timesStampForDb = localTimestamp
+    .toLocaleString("sv-SE", options) // 'sv-SE' gives YYYY-MM-DD format
+    .replace(" ", " ") // Ensure a single space
+    .slice(0, 19);
+    
+    saveBillingLogs([{
+      timer_id: timerId,
+      timestamp: timesStampForDb,
+      price: price,
+      paid: false,
+    }]);
+}
+
+//function to save shit
+async function saveBillingLogs(logs) {
+  console.log("Session Data that is going to be sent: ", logs);
+  try {
+    const response = await fetch("4savingBlogs.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(logs),
+    });
+    const data = await response.json();
+    console.log("Success", data);
+    await fetchTables();
+  } catch (error) {
+    console.log("Error", error);
+  }
+}
+
+
+async function fetchBillingLogs(timerId) {
+  try {
+      const response = await fetch(`5fetchBlogs.php?timer_id=${timerId}`);
+      const data = await response.json();
+
+      console.log("Response data:", data); // Log the full response data
+
+      if (data.status === "success") {
+          populateBillingLogs(data.data);
+          updateTotalBill();
+      } else {
+          console.error("Error fetching logs:", data.message || "Unknown error");
+      }
+  } catch (error) {
+      console.error("Error:", error);
+  }
+}
+
+//store the logs inside the array
+
+
+function populateBillingLogs(logs) {
+  billingLogs = []; //clearing existing logs
+  const logsContainer = document.getElementById('billingLogsBody');
+  logsContainer.innerHTML = ''; // Clear previous logs
+  billingLogs = logs; // Update the in-memory array
+  console.log("billing logs", billingLogs);
+  if (logs.length === 0) {
+      const noLogsMessage = document.createElement('tr');
+      noLogsMessage.innerHTML = `<td colspan="4" class="text-center">No billing logs recorded.</td>`;
+      logsContainer.appendChild(noLogsMessage);
+      return; // Exit the function
+  }
+
+  // Populate logs
+  logs.forEach((log, index) => {
+      const formattedTimestamp = formatToAMPM(log.timestamp);
+      const logRow = document.createElement('tr');
+      logRow.innerHTML = `
+          <td>${formattedTimestamp}</td>
+          <td>P ${log.price}</td>
+          <td>
+              <input type="checkbox" class="paid-checkbox" data-index="${index}" ${log.paid === 1 ? 'checked' : ''}>
+          </td>
+          <td>
+              <button class="btn btn-sm btn-warning edit-btn" data-id="${log.id}" data-price="${log.price}">Edit</button>
+              <button class="btn btn-sm btn-danger delete-btn" data-id="${log.id}">Delete</button>
+          </td>
+      `;
+      logsContainer.appendChild(logRow);
+  });
+
+  document.querySelectorAll('.paid-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function(event) {
+        const index = event.target.dataset.index; // Get the index from data attribute
+        billingLogs[index].paid = event.target.checked ? 1 : 0; // Update paid status in array
+        updateTotalBill(); // Recalculate the total bill based on updated `billingLogs`
+
+        // Save the modified log to the database
+        const logToSave = billingLogs[index];
+        saveBillingLogs([logToSave]);   // Only send the updated log
+    });
+  });
+
+  document.querySelectorAll('.edit-btn').forEach(button => {
+      button.addEventListener('click', (event) => {
+          const logId = event.target.dataset.id;
+          const logPrice = event.target.dataset.price;
+          // Populate the edit modal with the log details
+          document.getElementById('editPriceInput').value = logPrice; // Assuming you have an input for price in your modal
+          document.getElementById('editLogId').value = logId; // Assuming you have a hidden input to store the log ID
+          // Show the edit modal
+          const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+          editModal.show();
+      });
+  });
+
+  document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', (event) => {
+        const logId = event.target.dataset.id;
+        document.getElementById('confirmDeleteLogId').value = logId; // Assuming you have a hidden input for confirming deletion
+        // Show the delete modal
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+    });
+  });
+
+  updateTotalBill();
+}
+
+
+
+// Function to clear billing logs in the UI
+function clearBillingLogsUI(timerId) {
+  const billingLogsElement = document.getElementById(`billingLogs-${timerId}`);
+  const unpaidBillElement = document.getElementById(`totalUnpaidDisplay-${timerId}`);
+  if (billingLogsElement && unpaidBillElement) {
+    billingLogsElement.innerHTML = ""; // Clear the billing logs display
+    unpaidBillElement.textContent = "0"; // Set total unpaid bill display to 0
+  }
+}
+
+// Function to clear billing logs in the database
+async function clearBillingLogsDatabase(timerId) {
+  console.log("timerId thats being cleared: ", timerId);
+  try {
+    const response = await fetch("8clearBlogs.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ timer_id: timerId }),
+    });
+    const data = await response.json();
+    if (data.status === "success") {
+      console.log("Billing logs cleared successfully in the database.");
+    } else {
+      throw new Error(data.message || "Unknown error");
+    }
+  } catch (error) {
+    console.error("Error clearing billing logs:", error);
+    throw error; // Re-throw error to be caught in the calling function
+  }
+}
+
+// Billing rate tiers
+const priceTiers = [
+  { maxMinutes: 30, price: 50 },  // 1 to 30 minutes costs 50 PHP
+  { maxMinutes: 60, price: 100 }, // 31 to 60 minutes costs 100 PHP
+  { maxMinutes: 120, price: 200 }, // 61 to 120 minutes costs 200 PHP
+  // Add more tiers as needed
+];
+
+const pricePerHalfHour = 50;
+const pricePerHour = 100;
+
+//will be called first when open time gets started
+function calculateOpenTimePrice(elapsedSeconds) {
+  let price = 0;
+
+  if (elapsedSeconds <= 5) {  // Up to 30 minutes, charge for half an hour
+      price = pricePerHalfHour;
+  } else if (elapsedSeconds <= 10) {  // Between 31 minutes and 60 minutes, charge for 1 hour
+      price = pricePerHour;
+  } else {  // For more than 1 hour, calculate for hours and remaining time
+      const hours = Math.floor(elapsedSeconds / 10);
+      price += hours * pricePerHour;
+      const remainingSeconds = elapsedSeconds - (hours * 10);
+      if (remainingSeconds > 0) {
+          if (remainingSeconds <= 5) {
+              price += pricePerHalfHour;
+          } else {
+              price += pricePerHour;
+          }
+      }
+  }
+
+  return price;
+}
+
+// Calculate price based on additional time in seconds
+function calculatePrice(additionalTimeInSeconds) {
+  const minutes = additionalTimeInSeconds / 60;
+
+  // Find the price tier that fits the time range
+  for (const tier of priceTiers) {
+    if (minutes <= tier.maxMinutes) {
+      return tier.price;
+    }
+  }
+  
+  // For times beyond the defined tiers
+  console.log("Time exceeds the defined limits. Adjust price tiers if needed.");
+  return null; // Handle or calculate further based on custom requirements
+}
+
+
+// Handle Confirm Delete Button Click
+document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+  const logId = document.getElementById('confirmDeleteLogId').value;
+
+  // Send a request to delete the log
+  const response = await fetch('6DeleteBlogs.php', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: logId })
+  });
+  
+  const result = await response.json();
+  if (result.status === 'success') {
+      // Refresh the logs if the delete is successful
+      fetchBillingLogs(timerId); // Make sure to define `currentTimerId`
+      $('#deleteModal').modal('hide'); // Hide the modal
+  } else {
+      console.error('Error deleting log:', result.message);
+  }
+});
+
+// Handle Save Changes Button Click
+document.getElementById('saveChangesBtn').addEventListener('click', async () => {
+  const logId = document.getElementById('editLogId').value;
+  const newPrice = document.getElementById('editPriceInput').value;
+
+  // Send a request to update the log
+  const response = await fetch('7editBlogs.php', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: logId, price: newPrice })
+  });
+  
+  const result = await response.json();
+  if (result.status === 'success') {
+      // Refresh the logs if the update is successful
+      fetchBillingLogs(timerId); // Make sure to define `currentTimerId`
+      $('#editModal').modal('hide'); // Hide the modal
+  } else {
+      console.error('Error updating log:', result.message);
+  }
+});
+
+// Function to update and display the total unpaid bill
+function updateTotalBill() {
+  const totalBill = calculateTotalBill();
+
+  // Log the calculated total unpaid bill
+  console.log("Total unpaid bill:", totalBill);
+
+  // Select elements with a class for displaying the total unpaid bill
+  const totalBillElements = document.querySelectorAll(`#totalUnpaidDisplay-${timerId}`);
+
+  // Update each element with the total unpaid amount
+  totalBillElements.forEach(element => {
+      element.innerText = `PHP ${totalBill.toFixed(2)}`; // Ensure a fixed decimal format
+  });
+}
+
+
+// Function to calculate total unpaid amount from billingLogs
+function calculateTotalBill() {
+  let total = 0;
+
+  // Log the current state of billingLogs
+  console.log("Current billingLogs array:", billingLogs);
+
+  // Sum up prices of unpaid logs (paid === 0)
+  billingLogs.forEach(log => {
+      if (log.paid === 0) {  // Assuming 0 means unpaid
+          console.log(`Adding unpaid log price: ${log.price}`);
+          total += Number(log.price); // Ensure price is treated as a number
+      }
+  });
+
+  console.log("Calculated total from unpaid logs:", total);
+  return total;
+}
+
+// Function to calculate total unpaid bill based on unpaid billing logs
+function calculateUnpaidBill() {
+  let totalUnpaid = 0;
+
+  // Loop through all billing logs and sum only unpaid logs
+  billingLogs.forEach(log => {
+      if (!log.paid) {
+          totalUnpaid += Number(log.price); // Ensure price is a number
+      }
+  });
+
+  return totalUnpaid;
+}
+
+// Function to calculate all total bill (both paid and unpaid)
+function calculateAllTotal() {
+  let allTotal = 0;
+
+  // Calculate total for all billing logs
+  billingLogs.forEach(log => {
+      allTotal += Number(log.price); // Ensure the price is treated as a number
+  });
+
+  return allTotal;
+}
+
+
+
+
