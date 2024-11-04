@@ -10,6 +10,7 @@ const startTimerButton = document.getElementById("startTimer");
 const pauseTimerButton = document.getElementById("pauseTimer");
 const resumeTimerButton = document.getElementById("resumeTimer");
 const stopTimerButton = document.getElementById("stopTimer");
+const saveTimerButton = document.getElementById("saveTimer");
 const addTimeButton = document.getElementById("addTimeButton");
 
 // Function to toggle timer type
@@ -104,7 +105,8 @@ async function fetchTables() {
       table.pause_time,
       table.cumulativePause,
       table.status,
-      tableId
+      tableId,
+      table.tableNumber,
     );
   
     });
@@ -151,9 +153,12 @@ const cumulativePauseDurations  = new Map();
 const totalSecondsMap = new Map();
 const statusMap = new Map();
 const pauseTimeMillisMap = new Map(); // Store pauseTimeMillis per timer
+const tableNumberMap = new Map();  // Stores table numbers by timerId
+const startTimeMap = new Map();     // Stores start times by timerId
+const timerTypeMap = new Map();     // Stores start times by timerId
+
 
 // I think I should have pausedTimeMillis map
-
 
 let pauseTimeMillis = 0;
 let cumulativePauseDuration = 0;
@@ -166,11 +171,13 @@ function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulati
   if (timerIntervals.has(tableId)) {
     clearInterval(timerIntervals.get(tableId));
   }
-    // Initialize specific table flags
+  // Initialize specific table flags
   pausedTimers.set(tableId, status === "paused"); // Track if this timer is paused
   finishedTimers.set(tableId, false); // Reset finished state when initializing
   statusMap.set(tableId, status);
-
+  tableNumberMap.set(tableId, tableNumb);
+  startTimeMap.set(tableId, startTime);
+  timerTypeMap.set(tableId, timerType);
   //just making it into integer para sure haha
   let cumulativePauseDuration = parseInt(cumulativePause, 10) || 0;
   cumulativePauseDurations.set(tableId, cumulativePauseDuration);
@@ -217,7 +224,7 @@ function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulati
           if (currentRemainingSeconds <= 0) {
             finishTimer(tableId);
           } else {
-            console.log("REMAINING SECONDS RUNNING", currentRemainingSeconds);
+ 
             // Update the remaining seconds and display
             remainingSecondsMap.set(tableId, currentRemainingSeconds - 1);
             updateRemainingTime(currentRemainingSeconds - 1, tableId, "regular");
@@ -226,7 +233,7 @@ function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulati
         } else if (timerType === "open") {
           remainingSecondsMap.set(tableId, currentRemainingSeconds + 1);
           const timeUsed = remainingSecondsMap.get(tableId);
-          console.log("RUNNING SECONDS (OPEN TIME):", timeUsed);
+
           updateRemainingTime(timeUsed + 1, tableId, "open");
           updateRemainingTimeCard(timeUsed + 1, tableId, "open");
           if (timeUsed % 5 === 0) {
@@ -253,31 +260,6 @@ function getElapsedTime(startTimeMillis, cumulativePauseDuration) {
     (currentTime - startTimeMillis - cumulativePauseDuration) / 1000
   );
 }
-
-// Pause Timer
-pauseTimerButton.addEventListener("click", function () {
-  console.log("Pause Clicked!");
-  const localTimestamp = new Date(); // Current local time
-  const options = { timeZone: "Asia/Singapore", hour12: false }; // Set options for Singapore timezone
-
-  // Create a formatted string for the timestamp
-  const pauseTime = localTimestamp
-    .toLocaleString("sv-SE", options) // 'sv-SE' gives YYYY-MM-DD format
-    .replace(" ", " ") // Ensure a single space
-    .slice(0, 19);
-
-  // Set the pause time in milliseconds for this specific timer
-  pauseTimeMillisMap.set(timerId, localTimestamp.getTime());
-  
-  // track that this timer is now paused
-  pausedTimers.set(timerId, true);
-
-  saveTimerSession({
-    id: timerId, // Use the global sessionId
-    pause_time: pauseTime,
-    status: "paused",
-  });
-});
 
 
 function finishTimer(tableId) {
@@ -418,7 +400,8 @@ function updateModal(button) {
     cumulativePause,
     status,
     timerId,
-    tableNumber
+    tableNumber,
+    startTime
   );
   manageButtonStates(status);
   manageTimerTypeFields();
@@ -502,7 +485,7 @@ stopTimerButton.addEventListener("click", function () {
     cumulativePause: 0, // Reset cumulative pause duration
     notes: "", // Clear notes or set as needed
   });
-  
+  document.getElementById("noteInput").value = "";
   console.log("Timer reset and session saved.");
 });
 
@@ -514,7 +497,6 @@ resumeTimerButton.addEventListener("click", function () {
   if (pausedTimers.get(timerId)) {
     const currentTime = new Date().getTime();
     const pauseStart = pauseTimeMillisMap.get(timerId); // Get stored pause start time
-
 
     // Calculate this pause's duration
     const pauseDuration = currentTime - pauseStart;
@@ -538,6 +520,92 @@ resumeTimerButton.addEventListener("click", function () {
     });
   }
 });
+
+// Pause Timer
+pauseTimerButton.addEventListener("click", function () {
+  console.log("Pause Clicked!");
+  const localTimestamp = new Date(); // Current local time
+  const options = { timeZone: "Asia/Singapore", hour12: false }; // Set options for Singapore timezone
+
+  // Create a formatted string for the timestamp
+  const pauseTime = localTimestamp
+    .toLocaleString("sv-SE", options) // 'sv-SE' gives YYYY-MM-DD format
+    .replace(" ", " ") // Ensure a single space
+    .slice(0, 19);
+
+  // Set the pause time in milliseconds for this specific timer
+  pauseTimeMillisMap.set(timerId, localTimestamp.getTime());
+  
+  // track that this timer is now paused
+  pausedTimers.set(timerId, true);
+
+  saveTimerSession({
+    id: timerId, // Use the global sessionId
+    pause_time: pauseTime,
+    status: "paused",
+  });
+});
+
+saveTimerButton.addEventListener("click", function (){
+  console.log("saveTimerButton Clicked!")
+
+  // Confirmation dialog
+  const confirmSave = confirm("Do you want to save the session?");
+  if (!confirmSave) {
+    console.log("Session save canceled by user.");
+    return; // Exit if user selects "No"
+  }
+
+  const tableNumber = tableNumberMap.get(timerId); // Retrieve table number from map
+  const startTime = startTimeMap.get(timerId); 
+  const timerType = timerTypeMap.get(timerId); 
+
+
+  let cumulativePause = cumulativePauseDurations.get(timerId) || 0;    // Retrieve start time from ma
+  //if the timer is paused
+  if (pausedTimers.get(timerId)) {
+    const currentTime = new Date().getTime();
+    const pauseStart = pauseTimeMillisMap.get(timerId); // Get stored pause start time
+
+    // Calculate this pause's duration
+    const pauseDuration = currentTime - pauseStart;
+    cumulativePause += pauseDuration; // add the recent pause duration
+  }
+  //for saveTimeStamp
+  const localTimestamp = new Date(); // Current local time
+  const localTimeStampMillis = localTimestamp.getTime();
+  const options = { timeZone: "Asia/Singapore", hour12: false }; // Set options for Singapore timezone
+  // Create a formatted string for the timestamp
+  const saveTimeStamp = localTimestamp
+    .toLocaleString("sv-SE", options) // 'sv-SE' gives YYYY-MM-DD format
+    .replace(" ", " ") // Ensure a single space
+    .slice(0, 19);
+
+     // Calculate `totalDurationSeconds`
+  const elapsedTimeMillis = localTimeStampMillis - new Date(startTime).getTime(); // total time in milliseconds
+  const activeDurationMillis = elapsedTimeMillis - cumulativePause; // exclude paused time
+  const totalDurationSeconds = Math.floor(activeDurationMillis / 1000);
+   
+  // Get billing details (assuming these are functions or methods to retrieve amounts)
+  const totalBillAmount = calculateAllTotal();
+  const totalBillPaid = calculatePaidBill();
+  const totalBillUnpaid = calculateTotalBill();
+
+
+  saveSessionLogs([{
+   timerId: timerId,
+   startTime: startTime,
+   savedTime: saveTimeStamp,
+   totalDurationSeconds: totalDurationSeconds,
+   totalBillAmount: totalBillAmount,
+   totalBillPaid: totalBillPaid,
+   totalBillUnpaid: totalBillUnpaid,
+   tableNumber: tableNumber,
+   timerType: timerType
+  }])
+});
+
+
 
 addTimeButton.addEventListener("click", function () {
   console.log("Add Time button clicked");
@@ -774,6 +842,45 @@ async function saveBillingLogsOpenTime(logs) {
   }
 }
 
+//function to save shit
+async function saveBillingLogs(logs) {
+  console.log("Session Data that is going to be sent: ", logs);
+  try {
+    const response = await fetch("4savingBlogs.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(logs),
+    });
+    const data = await response.json();
+    console.log("Success", data);
+    await fetchTables();
+  } catch (error) {
+    console.log("Error", error);
+  }
+}
+
+//function to save shit
+async function saveSessionLogs(logs) {
+  console.log("saveSessionLogs that is going to be sent: ", logs);
+  try {
+    const response = await fetch("10saveSessionLogs.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(logs),
+    });
+    const data = await response.json();
+    console.log("Success", data);
+    await fetchTables();
+  } catch (error) {
+    console.log("Error", error);
+  }
+}
+
+
 // BILLINGLOGS
 function addBillingLogEntry(additionalTimeInSeconds){
   const price = calculatePrice(additionalTimeInSeconds); // Calculate the price for the added time
@@ -795,24 +902,6 @@ function addBillingLogEntry(additionalTimeInSeconds){
     }]);
 }
 
-//function to save shit
-async function saveBillingLogs(logs) {
-  console.log("Session Data that is going to be sent: ", logs);
-  try {
-    const response = await fetch("4savingBlogs.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(logs),
-    });
-    const data = await response.json();
-    console.log("Success", data);
-    await fetchTables();
-  } catch (error) {
-    console.log("Error", error);
-  }
-}
 
 
 async function fetchBillingLogs(timerId) {
@@ -848,6 +937,8 @@ function populateBillingLogs(logs) {
       logsContainer.appendChild(noLogsMessage);
       return; // Exit the function
   }
+
+  
 
   // Populate logs
   logs.forEach((log, index) => {
@@ -1042,9 +1133,15 @@ document.getElementById('saveChangesBtn').addEventListener('click', async () => 
 // Function to update and display the total unpaid bill
 function updateTotalBill() {
   const totalBill = calculateTotalBill();
+  const paidBill = calculatePaidBill()
+  const allTotal = calculateAllTotal()
 
   // Log the calculated total unpaid bill
   console.log("Total unpaid bill:", totalBill);
+  // Log the calculated total unpaid bill
+  console.log("Total paidBill:", paidBill);
+  // Log the calculated total unpaid bill
+  console.log("Total allTotal:", allTotal);
 
   // Select elements with a class for displaying the total unpaid bill
   const totalBillElements = document.querySelectorAll(`#totalUnpaidDisplay-${timerId}`);
@@ -1076,18 +1173,20 @@ function calculateTotalBill() {
 }
 
 // Function to calculate total unpaid bill based on unpaid billing logs
-function calculateUnpaidBill() {
-  let totalUnpaid = 0;
+function calculatePaidBill() {
+  let totalPaid = 0;
 
-  // Loop through all billing logs and sum only unpaid logs
+  // Sum up prices of unpaid logs (paid === 0)
   billingLogs.forEach(log => {
-      if (!log.paid) {
-          totalUnpaid += Number(log.price); // Ensure price is a number
-      }
+    if (log.paid === 1) {  // Assuming 0 means unpaid
+        console.log(`Adding unpaid log price: ${log.price}`);
+        totalPaid += Number(log.price); // Ensure price is treated as a number
+    }
   });
 
-  return totalUnpaid;
+  return totalPaid;
 }
+
 
 // Function to calculate all total bill (both paid and unpaid)
 function calculateAllTotal() {
