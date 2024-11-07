@@ -89,7 +89,7 @@ function renderTableInfo(tables) {
   tables.forEach((table) => {
     const row = `<tr id="tableRow-${table.id}">
                 <td>Table ${table.tableNumber}</td>
-                <td>
+                <td class="text-center">
                     <button class="btn btn-sm btn-warning edit-btn" data-table="${table.id}" data-table-number="${table.tableNumber}" data-toggle="modal" data-target="#editModal" >Edit</button>
                     <button class="btn btn-sm btn-danger delete-btn" data-table="${table.id}" data-toggle="modal" data-target="#deleteModal">Delete</button>
                 </td>
@@ -173,6 +173,7 @@ document.getElementById("saveEditBtn").addEventListener("click", function() {
     })
     .catch(error => console.error("Error:", error));
 });
+
 
 
 // Function to add tables

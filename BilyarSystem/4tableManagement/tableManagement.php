@@ -17,6 +17,8 @@
 
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="../systemStyles/styles.css?v=<?php echo time(); ?>" />
+  <link rel="stylesheet" href="tmStyles.css?v=<?php echo time(); ?>">
+
 </head>
 
 <body>
@@ -24,7 +26,8 @@
   <?php include '../1nav/aside.php'; ?>
 
   <main>
-    <div class="container tableManagement mt-5">
+    <div class="tableManagement">
+      <div><h2 class="text-center">Table Management</h2></div>
       <div class="row clearfix" id="tableCards">
         <!-- Cards will be populated using JavaScript -->
       </div>

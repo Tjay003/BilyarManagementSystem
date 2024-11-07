@@ -18,7 +18,7 @@
     <?php include '../1nav/aside.php'; ?>
 
     <main>
-        <div class="container queue my-4">
+        <div class="queue my-4">
             <h2 class="text-center">Queue Management</h2>
 
             <!-- Create button -->

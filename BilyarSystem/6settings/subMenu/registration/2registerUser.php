@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
         if ($imageSize <= 2000000 && in_array(strtolower($imageExtension), $allowedExtensions)) {
             // Set a target directory for uploads
-            $uploadDir = '../uploads';
+            $uploadDir = '../uploads/';
             $imagePath = $uploadDir . uniqid() . '.' . $imageExtension; // Unique image path
 
             // Move the uploaded file to the desired location

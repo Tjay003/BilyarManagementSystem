@@ -7,13 +7,15 @@
     --text: #54473F;
 }
 
-main .table thead{
+
+
+main .container .table thead{
     background-color: #CBD2A4;
     color: var(--color4);
 }
 
-.queue .btn-primary {
-    background-color: var(--color2);
+.tableManagement .btn-primary {
+    background-color: var(--color2) !important;
     /* Custom primary color */
     color: var(--color4);
     /* Text color */
@@ -26,37 +28,37 @@ main .table thead{
 }
     /* Rounded corners */
 
-.queue .btn-primary:hover {
+.tableManagement .btn-primary:hover {
     background-color: var(--color3);
     color: white;
     box-shadow: 0px 5px 5px 0px #54473F;
     /* Darker shade on hover */
 }
 
-.queue .btn-primary:focus {
+.tableManagement .btn-primary:focus {
     background-color: #9A7E6F;/* Color on click */
     outline: none; /* Removes the focus outline */
 }
 
-.queue .btn-primary:active {
+.tableManagement .btn-primary:active {
     background-color: var(--color3) !important;
     color: white !important;
     box-shadow: 0px 5px 5px 0px #54473F !important;
 }
 
-.queue .btn-danger{
+.tableManagement .btn-danger{
     border: none;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     transition: 200ms all ease;
 }
 
 
-.queue .btn-danger:hover {
+.tableManagement .btn-danger:hover {
     box-shadow: 0px 5px 5px 0px #54473F;
 }
 
 
-.queue .btn-warning{
+.tableManagement .btn-warning{
     background-color: var(--color3);
     border: none;
     color: white;
@@ -65,16 +67,51 @@ main .table thead{
 }
 
 
-.queue .btn-warning:hover {
+.tableManagement .btn-warning:hover {
     background-color: var(--color4);
     box-shadow: 0px 5px 5px 0px #54473F ;
 }
 
-.queue .btn-warning:focus, .queue .btn-warning:active {
+.tableManagement .btn-warning:focus, .tableManagement .btn-warning:active {
     background-color: var(--color4) !important;/* Color on click */
     outline: none !important; /* Removes the focus outline */
     box-shadow: 0px 5px 5px 0px #54473F !important;
     color: var(--color1) !important;
+}
+
+/* card designs.............................. */ 
+
+
+.tableManagement .card-header{
+    background-color: var(--color2) !important;
+}
+
+.tableManagement .card {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: 200ms all ease;
+}
+
+.tableManagement .card:hover{
+    box-shadow: 0px 5px 10px 0px var(--text) !important;
+}
+
+.tableManagement .card .card-footer .btn{
+        background-color: var(--color2) !important;
+    /* Custom primary color */
+    color: var(--color4);
+    /* Text color */
+    border: none;
+    /* No border */
+    border-radius: 5px;
+
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: 300ms all ease;
+}
+
+.tableManagement .card .card-footer .btn:hover{
+    background-color: var(--color3) !important;
+    color: white;
+
 }
 
 
@@ -121,3 +158,4 @@ main .table thead{
 .pagination .page-link:active{
     box-shadow: none !important;
 }
+

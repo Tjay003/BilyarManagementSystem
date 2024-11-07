@@ -272,7 +272,7 @@ function finishTimer(tableId) {
   // Mark as finished and pause this timer
   finishedTimers.set(tableId, true);
   pausedTimers.set(tableId, true);
-
+  
   // Save the finish (pause) time as a timestamp
   const localTimestamp = new Date();
   const options = { timeZone: "Asia/Singapore", hour12: false };

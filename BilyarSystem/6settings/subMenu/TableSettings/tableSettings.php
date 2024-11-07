@@ -43,10 +43,35 @@
         <button class="btn btn-secondary" id="delete">Delete</button>
       </div>
 
+      <!-- Input for number of tables -->
+      <div class="d-flex justify-content-start mt-4 align-items-center">
+        <!-- Label for the input field -->
+        <label for="" class="mr-2">Table Pricing:</label>
+      </div>
+      <!-- Input for number of tables -->
+      <div class="d-flex justify-content-start mb-2 align-items-center">
+        <!-- Label for the input field -->
+        <label for="pricinghalf" class="mr-2">For every half hour / 30mins</label>
+        <input type="number" class="form-control w-25" id="pricinghalf" placeholder="30mins" min="0"
+          aria-label="Number of tables">
+        <button class="btn btn-primary mx-2" id="updateHalf">update</button>
+
+      </div>
+      <div class="d-flex justify-content-start mb-4 align-items-center">
+        <!-- Label for the input field -->
+        <label for="pricinghourly" class="mr-2">For every hour / 1hour</label>
+        <input type="number" class="form-control w-25" id="pricinghourly" placeholder="1hour" min="0"
+          aria-label="Number of tables">
+        <button class="btn btn-primary mx-2" id="updateHour">update</button>
+      </div>
+  
+
 
       <!-- Increment and Decrement Buttons -->
-      <div class="d-flex justify-content-start ">
+      <div class="d-flex justify-content-around ">
         <p id="numberOfTables">Total Number of Tables: </p>
+        <p>Half Hour Price: PHP 36</p>
+        <p>1 Hour Price: PHP 72</p>
       </div>
 
       <!-- Generated Tables Information -->
@@ -54,7 +79,7 @@
         <thead>
           <tr>
             <th>Table Number <button class="btn btn-sm btn-light" id="sortTableBtn">Sort</button></th>
-            <th>Action</th>
+            <th class="text-center">Action</th>
           </tr>
         </thead>
         <!-- tableInfoBody Variable -->

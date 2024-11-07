@@ -12,7 +12,7 @@ main .table thead{
     color: var(--color4);
 }
 
-.queue .btn-primary {
+.btn-primary {
     background-color: var(--color2);
     /* Custom primary color */
     color: var(--color4);
@@ -26,37 +26,37 @@ main .table thead{
 }
     /* Rounded corners */
 
-.queue .btn-primary:hover {
+.btn-primary:hover {
     background-color: var(--color3);
     color: white;
     box-shadow: 0px 5px 5px 0px #54473F;
     /* Darker shade on hover */
 }
 
-.queue .btn-primary:focus {
+.btn-primary:focus {
     background-color: #9A7E6F;/* Color on click */
     outline: none; /* Removes the focus outline */
 }
 
-.queue .btn-primary:active {
+ .btn-primary:active {
     background-color: var(--color3) !important;
     color: white !important;
     box-shadow: 0px 5px 5px 0px #54473F !important;
 }
 
-.queue .btn-danger{
+ .btn-danger{
     border: none;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     transition: 200ms all ease;
 }
 
 
-.queue .btn-danger:hover {
+ .btn-danger:hover {
     box-shadow: 0px 5px 5px 0px #54473F;
 }
 
 
-.queue .btn-warning{
+ .btn-warning{
     background-color: var(--color3);
     border: none;
     color: white;
@@ -65,12 +65,12 @@ main .table thead{
 }
 
 
-.queue .btn-warning:hover {
+ .btn-warning:hover {
     background-color: var(--color4);
     box-shadow: 0px 5px 5px 0px #54473F ;
 }
 
-.queue .btn-warning:focus, .queue .btn-warning:active {
+ .btn-warning:focus, .queue .btn-warning:active {
     background-color: var(--color4) !important;/* Color on click */
     outline: none !important; /* Removes the focus outline */
     box-shadow: 0px 5px 5px 0px #54473F !important;
