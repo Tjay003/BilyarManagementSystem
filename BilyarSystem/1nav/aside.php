@@ -40,13 +40,36 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'guest'; // Default t
         <span class="span">Table Management</span>
       </a>
     </li>
-    <li class="<?= $current_page == 'finance.php' ? 'active' : '' ?> sidebar-item">
+    <!-- <li class="<?= $current_page == 'finance.php' ? 'active' : '' ?> sidebar-item">
       <a href="/Bilyar4/BilyarSystem/5finance/finance.php" class="sidebar-link">
         <i><span class="logo material-symbols-outlined">
             analytics
           </span></i>
         <span class="span">Financial Management</span>
       </a>
+    </li> -->
+
+    <?php
+    $fmPages = ['finance.php', 'dataLogs.php'];
+    ?>
+
+    <li class="sidebar-item">
+      <button onclick="toggleSubMenu(this)"
+        class="<?= in_array($current_page, $fmPages) ? 'active' : '' ?> dropdown-btn">
+        <i><span class="logo material-symbols-outlined">analytics</span></i>
+        <span class="span">Financial Management</span>
+        <i><span class="material-symbols-outlined">
+            keyboard_arrow_down
+          </span></i>
+      </button>
+      <ul class="sub-menu">
+        <div>
+          <li class="<?= $current_page == 'finance.php' ? 'active' : '' ?> sidebar-item"><a
+              href="/Bilyar4/BilyarSystem/5finance/finance.php">Data Analytics</a></li>
+          <li class="<?= $current_page == 'dataLogs.php' ? 'active' : '' ?> sidebar-item"><a
+              href="/Bilyar4/BilyarSystem/5finance/dataLogs.php">Data Logs</a></li>
+        </div>
+      </ul>
     </li>
 
     <?php
@@ -74,6 +97,11 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'guest'; // Default t
         </div>
       </ul>
     </li>
+  
+
+
+
+
     <li class="sidebar-item">
       <a href="/Bilyar4/LogIn.html" class="sidebar-link">
         <i><span class="logo material-symbols-outlined"> logout </span></i>

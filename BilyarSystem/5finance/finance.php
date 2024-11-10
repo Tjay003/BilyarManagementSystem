@@ -20,7 +20,7 @@
 
   <main>
     <div class="text-center">
-      <h1>Financial Management Page</h1>
+      <h1>Data Analytics</h1>
     </div>
 
     <div class="row">
@@ -65,23 +65,15 @@
 
     <div class="row">
       <div class="col-12 col-md-8 col-lg-6 col-xl-6">
-        <label for="typeForUtilizationRate" class="form-label">Revenue by Timer Type</label>
+        <label for="typeForUtilizationRate" class="form-label">Utilization Rates</label>
         <select class="form-control w-auto" id="typeForUtilizationRate" onchange="initializeChartForUtilizationRates()">
           <option value="hourly">Hourly</option>
           <option value="daily">Daily</option>
         </select>
-        <canvas id="" class="w-100"></canvas>
-      </div>
-      <div class="col-12 col-md-8 col-lg-8 col-xl-6">
-        <label for="UnpaidBillsAggregated" class="form-label">Unpaid Bills Analysis</label>
-        <select class="form-control w-auto" id="UnpaidBillsAggregated" onchange="()">
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-        </select>
-        <canvas id="" class="w-100"></canvas>
+        <canvas id="UtilizationRateChart" class="w-100"></canvas>
       </div>
     </div>
+
   </main>
 
   <!-- Chart.js 4.4.6 -->

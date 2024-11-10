@@ -81,6 +81,15 @@ function getMonthNumber(date) {
     const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Add leading zero
     return `${date.getFullYear()}-${month}`; // YYYY-MM
 }
+function getHourNumber(date) {
+    const hours24 = date.getHours();
+    const period = hours24 >= 12 ? 'PM' : 'AM';
+    const hours12 = hours24 % 12 || 12; // Convert 24-hour time to 12-hour format
+    const formattedDate = date.toISOString().split('T')[0]; // "YYYY-MM-DD"
+    
+    return `${formattedDate} ${hours12}${period}`; // "YYYY-MM-DD 12PM" or "YYYY-MM-DD 3AM"
+}
+
 
 // Function to create the revenue chart
 function createRevenueChart(aggregatedData) {
@@ -334,31 +343,21 @@ function aggregateDataForUnpaidBills(logs, aggregationFunction) {
         const dateKey = aggregationFunction(date); // Get aggregated value (day, week, or month)
 
         if (!aggregatedData[dateKey]) {
-            aggregatedData[dateKey] = { totalPaid: 0, totalUnpaid: 0 };
+            aggregatedData[dateKey] = { totalPaid: 0, totalUnpaid: 0, totalBill: 0 };
         }
 
-        // Accumulate total paid and unpaid amounts
-        aggregatedData[dateKey].totalPaid += parseFloat(log.totalBillAmount) - parseFloat(log.totalBillUnpaid);
-        aggregatedData[dateKey].totalUnpaid += parseFloat(log.totalBillUnpaid);
+        const totalPaid = parseFloat(log.totalBillAmount) - parseFloat(log.totalBillUnpaid);
+        const totalUnpaid = parseFloat(log.totalBillUnpaid);
+
+        // Accumulate total paid, unpaid, and overall bill amount
+        aggregatedData[dateKey].totalPaid += totalPaid;
+        aggregatedData[dateKey].totalUnpaid += totalUnpaid;
+        aggregatedData[dateKey].totalBill += parseFloat(log.totalBillAmount); // Add total amount for each entry
     });
 
     return aggregatedData;
 }
 
-function getDateNumber(date) {
-    return date.toISOString().split('T')[0]; // YYYY-MM-DD
-}
-function getWeekNumber(date) {
-    const startDate = new Date(date.getFullYear(), 0, 1);
-    const diff = date - startDate;
-    const oneWeek = 1000 * 60 * 60 * 24 * 7;
-    const weekNumber = Math.ceil(diff / oneWeek);
-    return `${date.getFullYear()}-W${weekNumber}`;
-}
-function getMonthNumber(date) {
-    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Add leading zero
-    return `${date.getFullYear()}-${month}`; // YYYY-MM
-}
 
 // Function to create the Unpaid Bills Analysis Stacked Bar Chart
 function createUnpaidBillsAnalysisChart(aggregatedData) {
@@ -368,6 +367,7 @@ function createUnpaidBillsAnalysisChart(aggregatedData) {
     const labels = Object.keys(aggregatedData);
     const paidData = labels.map(dateKey => aggregatedData[dateKey].totalPaid);
     const unpaidData = labels.map(dateKey => aggregatedData[dateKey].totalUnpaid);
+    const totalBillData = labels.map(dateKey => aggregatedData[dateKey].totalBill);
 
     // Create the stacked bar chart
     chartInstanceForUnpaidAnalysis = new Chart(ctx, {
@@ -376,18 +376,25 @@ function createUnpaidBillsAnalysisChart(aggregatedData) {
             labels: labels, // Dates or periods
             datasets: [
                 {
+                    label: 'Total Bill',
+                    data: totalBillData,
+                    backgroundColor: '#C0A080', // Different color for total bill
+                    borderColor: '#FFFFFF',
+                    stack: 'Stack 0',
+                },
+                {
                     label: 'Total Paid',
                     data: paidData,
                     backgroundColor: '#9A7E6F',
                     borderColor: '#FFFFFF',
-                    stack: 'Stack 0',
+                    stack: 'Stack 1',
                 },
                 {
                     label: 'Total Unpaid',
                     data: unpaidData,
                     backgroundColor: 'rgb(84, 71, 63)',
                     borderColor: '#FFFFFF',
-                    stack: 'Stack 0',
+                    stack: 'Stack 1',
                 }
             ]
         },
@@ -429,14 +436,11 @@ async function initializeChartForUtilizationRates() {
         console.log('No data available to create chart.');
         return;
     }
-    //initialization for storing
+    // Determine the aggregation function
     let aggregationFunction;
     switch (aggregationType) {
-        case 'weekly':
-            aggregationFunction = getWeekNumber;
-            break;
-        case 'monthly':
-            aggregationFunction = getMonthNumber;
+        case 'hourly':
+            aggregationFunction = getHourNumber;
             break;
         case 'daily':
         default:
@@ -444,17 +448,17 @@ async function initializeChartForUtilizationRates() {
             break;
     }
     // Aggregate the data by day
-    const aggregatedData = aggregateDataForUnpaidBills(data, aggregationFunction);
+    const aggregatedData = aggregateDataForUtilizationRates(data, aggregationFunction);
     // Destroy the existing chart if it exists
-    if (chartInstanceForUnpaidAnalysis) {
-        chartInstanceForUnpaidAnalysis.destroy();
+    if (chartInstanceForUtilizationRate) {
+        chartInstanceForUtilizationRate.destroy();
     }
 
-    createUtilizationRateChart(aggregatedData);
+    createUtilizationRateChart(aggregatedData, aggregationType);
 }
 
 // Function to aggregate data (pass the aggregationconst dateKey = aggregationFunction(date); function as an argument)
-function utilizationRate(logs, aggregationFunction) {
+function aggregateDataForUtilizationRates(logs, aggregationFunction) {
     const aggregatedData = {};
 
     logs.forEach(log => {
@@ -462,13 +466,63 @@ function utilizationRate(logs, aggregationFunction) {
         const dateKey = aggregationFunction(date); // Get aggregated value (day, week, or month)
 
         if (!aggregatedData[dateKey]) {
-            aggregatedData[dateKey] = { totalPaid: 0, totalUnpaid: 0 };
+            aggregatedData[dateKey] = 0;
         }
 
-        // Accumulate total paid and unpaid amounts
-        aggregatedData[dateKey].totalPaid += parseFloat(log.totalBillAmount) - parseFloat(log.totalBillUnpaid);
-        aggregatedData[dateKey].totalUnpaid += parseFloat(log.totalBillUnpaid);
+        // Accumulate total duration in seconds
+        aggregatedData[dateKey] += parseFloat(log.totalDurationSeconds);
     });
 
     return aggregatedData;
 }
+
+// Function to create an area or line chart for utilization rate
+function createUtilizationRateChart(aggregatedData, aggregationType) {
+    const ctx = document.getElementById("UtilizationRateChart").getContext("2d");
+
+    // Prepare data for the chart
+    const labels = Object.keys(aggregatedData); // Time intervals (hourly or daily)
+    const durationData = Object.values(aggregatedData).map(duration => duration / 3600); // Convert seconds to hours
+
+    // Create the chart instance
+    chartInstanceForUtilizationRate = new Chart(ctx, {
+        type: 'line', // Can be 'line' or 'area'
+        data: {
+            labels: labels,
+            datasets: [{
+                label: `Utilization Rate (${aggregationType})`,
+                data: durationData,
+                fill: true, // Set to true for area chart effect
+                borderColor: 'rgb(84, 71, 63)',
+                backgroundColor: '#9A7E6F',
+                tension: 0.4, // For smooth lines
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: aggregationType === 'hourly' ? 'Hour' : 'Day'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Hours Utilized'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+initializeChartForUtilizationRates()
