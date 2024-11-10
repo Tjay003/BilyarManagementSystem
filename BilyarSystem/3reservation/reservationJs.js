@@ -103,9 +103,7 @@ function renderTable(data) {
             button.addEventListener("click", function () {
                 deleteId = this.getAttribute("data-id");
             });
-        });
-
-        
+        }); 
     }
 }
 

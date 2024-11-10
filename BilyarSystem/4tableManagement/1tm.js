@@ -873,7 +873,7 @@ async function saveSessionLogs(logs) {
       body: JSON.stringify(logs),
     });
     const data = await response.json();
-    console.log("Success", data);
+    alert("Timer Session saved succesfully")
     await fetchTables();
   } catch (error) {
     console.log("Error", error);
