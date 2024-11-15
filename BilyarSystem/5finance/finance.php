@@ -13,7 +13,8 @@
 
   <!-- Custom Styles -->
   <link rel="stylesheet" href="../systemStyles/styles.css?v=<?php echo time(); ?>" />
-</head>
+  <link rel="stylesheet" href="financeStyles.css?v=<?php echo time(); ?>" />
+  </head>
 
 <body>
   <?php include '../1nav/aside.php'; ?>
@@ -63,7 +64,7 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="utilizationRate row">
       <div class="col-12 col-md-8 col-lg-6 col-xl-6">
         <label for="typeForUtilizationRate" class="form-label">Utilization Rates</label>
         <select class="form-control w-auto" id="typeForUtilizationRate" onchange="initializeChartForUtilizationRates()">
@@ -73,6 +74,7 @@
         <canvas id="UtilizationRateChart" class="w-100"></canvas>
       </div>
     </div>
+    <div class="paddingBottom"></div>
 
   </main>
 

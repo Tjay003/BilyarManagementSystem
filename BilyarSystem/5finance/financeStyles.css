@@ -12,6 +12,7 @@ main .table thead{
     color: var(--color4);
 }
 
+
 .btn-primary {
     background-color: var(--color2);
     /* Custom primary color */
@@ -123,4 +124,14 @@ main .table thead{
 
 .pagination .page-link:active{
     box-shadow: none !important;
+}
+
+@media (max-width: 800px) {
+    .paginationContainer{
+        padding-bottom: 80px !important;
+    }
+    .utilizationRate{
+        padding-bottom: 80px !important;
+    }
+
 }

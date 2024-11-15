@@ -4,7 +4,6 @@ const registrationForm = document.querySelector('#registrationForm');
 if (registrationForm) {
 
 
-
     registrationForm.addEventListener('submit', function(e) {
         e.preventDefault(); // Prevent the default form submission
         
@@ -30,10 +29,10 @@ if (registrationForm) {
             // Check for a success message
             if (data === 'User registered successfully.') { // Adjust this condition based on your server response
                 alert('Registration successful!');
-    
                 // Reset the form fields
                 registrationForm.reset();
             } else {
+                alert(data);
                 // Handle errors or other responses
                 console.log(data); // Display the error message from the server
             }

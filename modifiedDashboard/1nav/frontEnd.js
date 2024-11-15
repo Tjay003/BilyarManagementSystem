@@ -7,10 +7,21 @@ function toggleSideBar(){
 }
 
 function toggleSubMenu(button){
+    if(sidebar.classList.contains('closeSide')){
+        sidebar.classList.remove('closeSide');
+        setTimeout(() => {
+            if(!button.nextElementSibling.classList.contains('show')){
+                closeAllSubMenus();
+            }
+            button.nextElementSibling.classList.toggle('show');
+            button.classList.toggle('rotate');
+        }, 300);
+        return;
+    }
+
     if(!button.nextElementSibling.classList.contains('show')){
         closeAllSubMenus();
     }
-    
     button.nextElementSibling.classList.toggle('show');
     button.classList.toggle('rotate');
 }

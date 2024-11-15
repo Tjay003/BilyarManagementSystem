@@ -12,6 +12,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link rel="stylesheet" href="../../../systemStyles/styles.css?v=<?php echo time(); ?>" />
 </head>
+<style>
+    
+.btn-primary {
+    background-color: var(--color2);
+    /* Custom primary color */
+    color: var(--color4);
+    /* Text color */
+    border: none;
+    /* No border */
+    border-radius: 10px;
+
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: 300ms all ease;
+}
+    /* Rounded corners */
+
+.btn-primary:hover {
+    background-color: var(--color3);
+    color: white;
+    box-shadow: 0px 5px 5px 0px #54473F;
+    /* Darker shade on hover */
+}
+
+.btn-primary:focus {
+    background-color: #9A7E6F;/* Color on click */
+    outline: none; /* Removes the focus outline */
+}
+
+ .btn-primary:active {
+    background-color: var(--color3) !important;
+    color: white !important;
+    box-shadow: 0px 5px 5px 0px #54473F !important;
+}
+</style>
 
 <body>
     <?php include '../../../1nav/aside.php'; ?>

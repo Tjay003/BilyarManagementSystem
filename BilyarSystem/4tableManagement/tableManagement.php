@@ -28,7 +28,7 @@
   <main>
     <div class="tableManagement">
       <div><h2 class="text-center">Table Management</h2></div>
-      <div class="row clearfix" id="tableCards">
+      <div class="timerContent row clearfix" id="tableCards">
         <!-- Cards will be populated using JavaScript -->
       </div>
     </div>

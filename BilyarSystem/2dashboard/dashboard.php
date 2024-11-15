@@ -38,7 +38,7 @@
 </div>
 
     <!-- Queue Table Section -->
-    <section class="queue-section mt-5">
+    <section class="queue queue-section mt-5">
       <h2>Table Queue</h2>
        <!-- Responsive Table -->
        <table class="table table-bordered table-responsive-sm">
@@ -66,13 +66,6 @@
             </div>
     </section>
 
-    <!-- Table Management Section -->
-    <section class="table-management-section mt-5">
-      <h2>Table Management</h2>
-      <div class="row clearfix" id="tableCards">
-        <!-- Cards will be populated using JavaScript -->
-      </div>
-    </section>
   </main>
 
   <!-- Bootstrap JS and Popper.js for Bootstrap 5.3.0 -->

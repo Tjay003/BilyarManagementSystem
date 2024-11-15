@@ -20,7 +20,7 @@
 <body>
     <?php include '../1nav/aside.php'; ?>
 
-    <main>
+    <main class="datalogs">
         <div class="text-center">
             <h1>Data Logs</h1>
         </div>
@@ -50,7 +50,7 @@
                 <!-- Rows will be populated here by JavaScript -->
             </tbody>
         </table>
-        <div class="d-flex justify-content-center my-4">
+        <div class="paginationContainer d-flex justify-content-center my-4">
             <nav aria-label="Page navigation">
                 <ul class="pagination" id="pagination">
                     <li class="page-item"><a class="page-link" href="#" id="prev">Previous</a></li>

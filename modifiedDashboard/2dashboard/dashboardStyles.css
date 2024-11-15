@@ -121,9 +121,3 @@ main .table thead{
 .pagination .page-link:active{
     box-shadow: none !important;
 }
-
-@media (max-width: 800px) {
-    .queue{
-        padding-bottom: 65px !important;
-    }
-}

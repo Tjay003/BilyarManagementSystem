@@ -159,3 +159,10 @@ main .container .table thead{
     box-shadow: none !important;
 }
 
+@media (max-width: 800px) {
+    .timerContent{
+        padding-bottom: 60px;
+
+    }
+}
+
