@@ -328,6 +328,10 @@ main{
         height: 100%;
     }
 
+    #sidebar.closeSide > ul > li:first-child {
+        display: none;
+    }
+
     #sidebar{
         margin: 0;
         height: 60px;
@@ -386,6 +390,7 @@ main{
             display: none;
         }
 
+
         ul li .sub-menu.show{
             position: fixed;
             bottom: 65px;
@@ -415,6 +420,10 @@ main{
                 color: var(--color1);
             }
         }
+    }
+    
+    .closeSide ~ main{
+        padding-left: 1rem !important;
     }
 
     /* Reset closeSide class properties for mobile view */

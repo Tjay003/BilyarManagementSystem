@@ -2,9 +2,14 @@
     --color1: #E9EED9;
     --color2: #CBD2A4;
     --color3: #9A7E6F;
-    --color4: rgb(84, 71, 63);
+    --color4: #54473f;
     --hover: rgba(84, 71, 63, 0.2);
     --text: #54473F;
+}
+
+
+html{
+    line-height: 1.5rem;
 }
 
 body {
@@ -17,7 +22,7 @@ body {
     display: flex;
     justify-content: center;
     /* Center horizontally */
-    font-family: Arial, sans-serif;
+    font-family: "Poppins", sans-serif !important;
     /* Font styling */
 }
 
@@ -138,12 +143,7 @@ h2 {
 .mainContainerCustomerDisplay .scrolling-wrapper .card {
     min-width: 200px;
     margin-right: 10px;
-    border-radius: 10px;
-    /* Rounded corners for cards */
-    background-color: #CBD2A4;
-    /* Light greenish background */
-    border: 1px solid #9A7E6F;
-    /* Custom border color */
+
 }
 
 /* table css */
@@ -184,3 +184,114 @@ h2 {
     /* Color for section headings */
 }
 
+
+.pagination .active .page-link {
+    background-color: var(--color2);
+    border-color: var(--color2);
+    color: var(--color4);
+}
+
+
+.pagination .page-link:hover{
+    background-color: var(--color2);
+    border-color: var(--color2);
+    color: var(--color4);
+}
+
+.pagination .page-link:hover{
+    background-color: var(--color2);
+    border-color: var(--color2);
+    color: var(--color4);
+}
+
+.pagination .page-link{
+    color: var(--color4);
+}
+
+.pagination .page-link:active{
+    box-shadow: none !important;
+}
+
+.custom-highlight {
+    background-color: hsla(21, 18%, 52%, 0.2) !important;
+}
+
+.custom-badge {
+    background-color: #54473f !important;
+    color: white;
+    padding: 0.25em 0.4em;
+    font-size: 0.75em;
+    font-weight: 700;
+    border-radius: 0.25rem;
+    display: inline-block;
+}
+
+
+@media(max-width: 700px){
+    body{
+        padding: 2rem;
+    }
+}
+/* Add these styles for the table cards */
+
+.table-card{
+    padding: 0px 0px 20px 0px !important;
+}
+
+
+
+.card-body {
+    text-align: left !important;  /* Align content to the left */
+    padding: 20px !important;
+}
+
+/* card designs.............................. */ 
+
+
+.card-header{
+    text-align: left;
+    background-color: var(--color2) !important;
+    h5{
+        color: var(--text) !important;
+    }
+}
+
+.card-body{
+    background-color: #ffffff !important;
+}
+
+.tableCards {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;  /* Adds spacing between cards */
+}
+
+.tableCards .card {
+    width: 100%;  /* Makes cards take full width */
+    margin-bottom: 0;  /* Remove default margin since we're using gap */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: 200ms all ease;
+}
+
+.tableCards .card:hover{
+    box-shadow: 0px 5px 10px 0px var(--text) !important;
+}
+
+.tableCards .card .card-footer .btn{
+        background-color: var(--color2) !important;
+    /* Custom primary color */
+    color: var(--color4);
+    /* Text color */
+    border: none;
+    /* No border */
+    border-radius: 5px;
+
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: 300ms all ease;
+}
+
+.tableManagement .card .card-footer .btn:hover{
+    background-color: var(--color3) !important;
+    color: white;
+
+}

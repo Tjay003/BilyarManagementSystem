@@ -28,10 +28,20 @@
   <main>
     <div class="tableManagement">
       <div><h2 class="text-center">Table Management</h2></div>
+      <div class="dropdown mb-3">
+      <select class="form-select" id="sortSelect" style="width: 200px;">
+        <option value="default">Default Sort</option>
+        <option value="tableNumber">Sort by Table Number</option>
+        <option value="openTime">Sort by Open Time</option>
+        <option value="endingSoon">Sort by Ending Soon</option>
+        <option value="status">Sort by Status</option>
+      </select>
+    </div>
       <div class="timerContent row clearfix" id="tableCards">
         <!-- Cards will be populated using JavaScript -->
       </div>
     </div>
+    
 
     <div class="modal fade" id="timerModal" tabindex="-1" aria-labelledby="timerModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;"> <!-- Adjust max-width -->
@@ -103,7 +113,7 @@
                   <h6>Time Used:</h6>
                   <p>Start Time: <span id="startTime">N/A</span></p>
                   <p>End Time: <span id="endTime">N/A</span></p>
-                  <p>Total Time Used: <span id="timeUsed">0 min</span></p>
+                  <p>Total Time Used: <span id="timeUsed" data-type="totalTimeUsed">0 min</span></p>
                 </div>
               </div>
 

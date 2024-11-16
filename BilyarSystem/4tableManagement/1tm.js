@@ -19,14 +19,18 @@ const regularTimeFields = document.getElementById("regularTimeFields"); // Repla
 const openTimeFields = document.getElementById("openTimeFields"); // Replace with actual ID
 
 
-async function fetchTables() {
+async function fetchTables(sortType = 'default') {
   try {
     const response = await fetch("2fetchTables.php");
     const tables = await response.json();
+    
+    // Sort the tables based on selected sort type
+    const sortedTables = sortTables(tables, sortType);
+    
     const tableCards = document.getElementById("tableCards");
     tableCards.innerHTML = ""; // Clear any previous content
 
-    tables.forEach((table) => {
+    sortedTables.forEach((table) => {
       const tableId = table.id;
       const tableNumber = table.tableNumber;
       const timerType = table.timer_type; // Timer type (regular or open time)
@@ -47,6 +51,10 @@ async function fetchTables() {
       // Assign a data attribute to the card for the table ID (unique)
       card.setAttribute("data-table-id", tableId);
 
+      const expectedEnd = table.timer_type === "regular" 
+            ? calculateExpectedEnd(startTime, totalSeconds, tableId)
+            : "N/A";
+      console.log("expectedEnd: ", expectedEnd);
       // Set up Bootstrap card content
       card.innerHTML = `
                     <div class="card" id="card-${tableNumber}">
@@ -68,12 +76,12 @@ async function fetchTables() {
                                 </div>
                                 <div>
                                   <strong>Expected End:</strong>
-                                  <div>N/A</div> 
+                                  <div id="expectedEnd-${tableId}"> ${expectedEnd || "N/A"}</div> 
                                 </div>
 
                                 <div>
                                   <strong>Total Time Used:</strong> 
-                                  <div>N/A</div>
+                                  <div class="total-time-used">00:00:00</div>
                                 </div>
                             </div>
                         </div>
@@ -107,6 +115,7 @@ async function fetchTables() {
       table.status,
       tableId,
       table.tableNumber,
+      expectedEnd,
     );
   
     });
@@ -119,6 +128,32 @@ async function fetchTables() {
   } catch (error) {
     console.error("Error fetching table data:", error);
   }
+}
+
+// Function to calculate expected end time for regular timers
+function calculateExpectedEnd(startTime, totalSeconds, tableId) {
+    // Check if startTime is valid
+    if (!startTime || startTime === "Na" || startTime === "N/A") {
+        return "N/A";
+    }
+    
+    try {
+        const startDate = new Date(startTime);
+        // Check if startDate is valid
+        if (isNaN(startDate.getTime())) {
+            return "N/A";
+        }
+        
+        // Get cumulative pause duration for this timer
+        const cumulativePause = cumulativePauseDurations.get(tableId) || 0;
+        
+        // Add both the total seconds and cumulative pause to get the actual end time
+        const endDate = new Date(startDate.getTime() + (totalSeconds * 1000) + cumulativePause);
+        return formatToAMPM(endDate);
+    } catch (error) {
+        console.error("Error calculating expected end:", error);
+        return "N/A";
+    }
 }
 
 //function to save shit
@@ -166,8 +201,9 @@ let totalSeconds = 0; // Store total seconds for both timer types
 let isPaused = false; // Track if the timer is paused
 
 // Initialization of the timer function
-function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulativePause, status, tableId, tableNumb) {
+function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulativePause, status, tableId, tableNumb, expectedEnd) {
   // Clear any existing timer for the specific table
+  console.log("expected End after initialization: ", expectedEnd);
   if (timerIntervals.has(tableId)) {
     clearInterval(timerIntervals.get(tableId));
   }
@@ -178,11 +214,10 @@ function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulati
   tableNumberMap.set(tableId, tableNumb);
   startTimeMap.set(tableId, startTime);
   timerTypeMap.set(tableId, timerType);
-  //just making it into integer para sure haha
+ 
+   //just making it into integer para sure haha
   let cumulativePauseDuration = parseInt(cumulativePause, 10) || 0;
   cumulativePauseDurations.set(tableId, cumulativePauseDuration);
-  // console.log("cpd: ",cumulativePauseDuration);
-
   // Store the pause start time if the timer is currently paused
   pauseTimeMillisMap.set(tableId, pauseTime ? new Date(pauseTime).getTime() : 0);
 
@@ -193,8 +228,8 @@ function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulati
   }
 
   let elapsedTime = getElapsedTime(new Date(startTime).getTime(), cumulativePauseDuration);
+  console.log("elapsedTime: ", elapsedTime);
   console.log("Total Seconds", totalSeconds);
-
   let remainingSeconds;
   if ( status == "available") {
     remainingSeconds = parseInt(totalSeconds);
@@ -208,7 +243,7 @@ function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulati
   remainingSecondsMap.set(tableId, remainingSeconds);
   // Initialize the totalSecondsMap
   totalSecondsMap.set(tableId, parseInt(totalSeconds)); // Store the initial totalSeconds
-
+  updateExpectedEndTime(tableId); 
   if (status !== "available"){
       // Set interval for each tableId
       const interval = setInterval(() => {
@@ -231,21 +266,40 @@ function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulati
             updateRemainingTimeCard(currentRemainingSeconds - 1, tableId, "regular");
           }
         } else if (timerType === "open") {
-          remainingSecondsMap.set(tableId, currentRemainingSeconds + 1);
-          const timeUsed = remainingSecondsMap.get(tableId);
+          // Calculate elapsed time first
+          const currentElapsedTime = getElapsedTime(new Date(startTime).getTime(), cumulativePauseDurations.get(tableId) || 0);
+          
+          // Use the same elapsed time for both displays
+          remainingSecondsMap.set(tableId, currentElapsedTime);
+          updateRemainingTime(currentElapsedTime, tableId, "open");
+          updateRemainingTimeCard(currentElapsedTime, tableId, "open");
+          updateTotalTimeUsed(tableId, currentElapsedTime);
 
-          updateRemainingTime(timeUsed + 1, tableId, "open");
-          updateRemainingTimeCard(timeUsed + 1, tableId, "open");
-          if (timeUsed % 5 === 0) {
-            const price = calculateOpenTimePrice(timeUsed);
+          // Check for billing interval
+          if (currentElapsedTime % 300 === 0) {
+            const price = calculateOpenTimePrice(currentElapsedTime);
             addBillingLogOpenTime(tableId, price);
           }
+          return; // Skip the additional total time update below for open time
         }
+
+        // Update total time used only for regular timer
+        const currentElapsedTime = getElapsedTime(new Date(startTime).getTime(), cumulativePauseDurations.get(tableId) || 0);
+        updateTotalTimeUsed(tableId, currentElapsedTime);
       } else {
-        // Optionally update the display to show the paused time
+        // When paused, maintain the current total time display
         let currentRemainingSeconds = remainingSecondsMap.get(tableId);
-        updateRemainingTime(currentRemainingSeconds, tableId, "regular");
-        updateRemainingTimeCard(currentRemainingSeconds, tableId, "regular");
+        updateRemainingTime(currentRemainingSeconds, tableId, timerType);
+        updateRemainingTimeCard(currentRemainingSeconds, tableId, timerType);
+        
+        // Add this: Calculate and display the frozen total time when paused
+        if (isPaused) {
+          const pauseStartTime = pauseTimeMillisMap.get(tableId);
+          const currentPauseDuration = pauseStartTime ? (new Date().getTime() - pauseStartTime) : 0;
+          const totalPauseDuration = (cumulativePauseDurations.get(tableId) || 0) + currentPauseDuration;
+          const frozenElapsedTime = getElapsedTime(new Date(startTime).getTime(), totalPauseDuration);
+          updateTotalTimeUsed(tableId, frozenElapsedTime);
+        }
       }
     }, 1000);
     // Store the interval in the map for future reference
@@ -318,6 +372,25 @@ function updateRemainingTimeCard(seconds, tableId, type) {
   }
 }
 
+// Add a function to update expected end time in both card and modal
+function updateExpectedEndTime(tableId) {
+  const startTime = startTimeMap.get(tableId);
+  const totalSecs = totalSecondsMap.get(tableId);
+  const newExpectedEnd = calculateExpectedEnd(startTime, totalSecs, tableId);
+  // Update in card
+  const cardExpectedEnd = document.getElementById(`expectedEnd-${tableId}`);
+  if (cardExpectedEnd) {
+      cardExpectedEnd.textContent = newExpectedEnd;
+  }
+  
+  // Update in modal
+  const modalExpectedEnd = document.getElementById('endTime');
+  if (modalExpectedEnd && timerId === tableId) {
+      modalExpectedEnd.textContent = newExpectedEnd;
+  }
+}
+
+
 //for modal
 function updateRemainingTime(seconds, tableId, type) {
   // Default to 0 if seconds is NaN or null
@@ -355,11 +428,14 @@ function updateModal(button) {
 
   // for timer
   const startTime = button.getAttribute("data-start-time");
-  const endTime = button.getAttribute("data-end-time");
   const timerType = button.getAttribute("data-timer-type");
   const totalSeconds = button.getAttribute("data-total-seconds");
   const pauseTime = button.getAttribute("data-pause-time");
   const cumulativePause = button.getAttribute("data-cumulative-pause");
+  // Calculate and display expected end time
+  const expectedEnd = timerType === "regular" 
+  ? calculateExpectedEnd(startTime, totalSeconds, timerId)
+  : "N/A";
 
   const formattedStartTime = formatToAMPM(startTime);
   // Populate the modal header with the current values
@@ -367,7 +443,7 @@ function updateModal(button) {
   document.querySelector(".badge.status").textContent = status;
   document.querySelector("#startTime").textContent = formattedStartTime;
   document.querySelector("#noteInput").textContent = notes;
-  document.querySelector("#endTime").textContent = endTime;
+  document.querySelector("#endTime").textContent = expectedEnd;
   
   // Dynamically assign unique IDs based on the timer ID
   document.querySelector("[data-type='remainingTimeRegular']").id = `remainingTimeRegular-${timerId}`;
@@ -406,6 +482,9 @@ function updateModal(button) {
   manageButtonStates(status);
   manageTimerTypeFields();
   fetchBillingLogs(timerId);
+
+  // Add a unique ID for the total time used display in the modal
+  document.querySelector("[data-type='totalTimeUsed']").id = `totalTimeUsed-${timerId}`;
 }
 
 // Start Timer
@@ -703,28 +782,38 @@ window.setQuickTime = function (time) {
 
 // Function to format the start time string into AM/PM format
 function formatToAMPM(dateTimeString) {
-  // Check if the input is null, empty, or not a valid date
-  if (!dateTimeString || isNaN(new Date(dateTimeString))) {
-    return "N/A"; // or return an empty string "", or whatever default you prefer
-  }
+    // If dateTimeString is already a Date object
+    if (dateTimeString instanceof Date) {
+        const hours = dateTimeString.getHours();
+        const minutes = dateTimeString.getMinutes();
+        const ampm = hours >= 12 ? "PM" : "AM";
+        const formattedHours = hours % 12 || 12; // Convert 0 to 12
+        return `${pad(formattedHours)}:${pad(minutes)} ${ampm}`;
+    }
 
-  // Create a Date object from the dateTimeString
-  const date = new Date(dateTimeString.replace(" ", "T")); // Convert to ISO format
+    // If dateTimeString is a string
+    if (typeof dateTimeString !== 'string' || !dateTimeString || dateTimeString === "Na" || dateTimeString === "N/A") {
+        return "N/A";
+    }
 
-  // Get the hours, minutes, and seconds
-  let hours = date.getHours();
-  const minutes = date.getMinutes();
+    try {
+        const date = new Date(dateTimeString.replace(" ", "T")); // Convert to ISO format
+        
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+            return "N/A";
+        }
 
-  // Determine AM or PM suffix
-  const ampm = hours >= 12 ? "PM" : "AM";
-
-  // Convert hours from 24-hour to 12-hour format
-  hours = hours % 12;
-  hours = hours ? hours : 12; // the hour '0' should be '12'
-
-  // Pad minutes and seconds with leading zeros if needed
-  const formattedTime = `${pad(hours)}:${pad(minutes)} ${ampm}`;
-  return formattedTime;
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? "PM" : "AM";
+        const formattedHours = hours % 12 || 12; // Convert 0 to 12
+        
+        return `${pad(formattedHours)}:${pad(minutes)} ${ampm}`;
+    } catch (error) {
+        console.error("Error formatting time:", error);
+        return "N/A";
+    }
 }
 
 function manageButtonStates(status) {
@@ -1046,14 +1135,14 @@ const pricePerHour = 100;
 function calculateOpenTimePrice(elapsedSeconds) {
   let price = 0;
 
-  if (elapsedSeconds <= 5) {  // Up to 30 minutes, charge for half an hour
+  if (elapsedSeconds <= 1800) {  // Up to 30 minutes, charge for half an hour
       price = pricePerHalfHour;
-  } else if (elapsedSeconds <= 10) {  // Between 31 minutes and 60 minutes, charge for 1 hour
+  } else if (elapsedSeconds <= 3600) {  // Between 31 minutes and 60 minutes, charge for 1 hour
       price = pricePerHour;
   } else {  // For more than 1 hour, calculate for hours and remaining time
-      const hours = Math.floor(elapsedSeconds / 10);
+      const hours = Math.floor(elapsedSeconds / 3600);
       price += hours * pricePerHour;
-      const remainingSeconds = elapsedSeconds - (hours * 10);
+      const remainingSeconds = elapsedSeconds - (hours * 3600);
       if (remainingSeconds > 0) {
           if (remainingSeconds <= 5) {
               price += pricePerHalfHour;
@@ -1179,7 +1268,6 @@ function calculatePaidBill() {
   // Sum up prices of unpaid logs (paid === 0)
   billingLogs.forEach(log => {
     if (log.paid === 1) {  // Assuming 0 means unpaid
-        console.log(`Adding unpaid log price: ${log.price}`);
         totalPaid += Number(log.price); // Ensure price is treated as a number
     }
   });
@@ -1198,6 +1286,85 @@ function calculateAllTotal() {
   });
 
   return allTotal;
+}
+
+// Update the updateTotalTimeUsed function to handle both card and modal updates
+function updateTotalTimeUsed(tableId, seconds) {
+  // Update card display
+  const totalTimeElement = document.querySelector(`[data-table-id="${tableId}"] .total-time-used`);
+  if (totalTimeElement) {
+    totalTimeElement.textContent = formatTime(seconds);
+  }
+
+  // Update modal display if it's open and showing the same table
+  const modalTotalTimeElement = document.getElementById(`totalTimeUsed-${tableId}`);
+  if (modalTotalTimeElement && timerId === tableId) {
+    modalTotalTimeElement.textContent = formatTime(seconds);
+  }
+}
+
+// Add event listener for sort selection
+document.getElementById('sortSelect').addEventListener('change', function(e) {
+  const sortType = e.target.value;
+  fetchTables(sortType);
+});
+
+// Modify sortTables function to handle different sort types
+function sortTables(tables, sortType = 'default') {
+  switch(sortType) {
+    case 'tableNumber':
+      return tables.sort((a, b) => a.tableNumber - b.tableNumber);
+      
+    case 'openTime':
+      return tables.sort((a, b) => {
+        if (a.timer_type === b.timer_type) return 0;
+        return a.timer_type === 'open' ? -1 : 1;
+      });
+      
+    case 'endingSoon':
+      // Separate and sort regular tables by remaining time
+      const regularTables = tables.filter(table => table.timer_type === 'regular')
+        .sort((a, b) => calculateRemainingTime(a) - calculateRemainingTime(b));
+      // Put open time tables at the end
+      const openTables = tables.filter(table => table.timer_type === 'open');
+      return [...regularTables, ...openTables];
+      
+    case 'status':
+      return tables.sort((a, b) => {
+        const statusOrder = { 'active': 1, 'paused': 2, 'available': 3, 'finished': 4 };
+        return statusOrder[a.status] - statusOrder[b.status];
+      });
+      
+    default:
+      // Default sorting (you can define what this should be)
+      return tables;
+  }
+}
+
+// Add this function before sortTables
+function calculateRemainingTime(table) {
+  // Return Infinity for available tables so they go to the end
+  if (table.status === "available" || !table.start_time) {
+    return Infinity;
+  }
+
+  try {
+    const startTimeMillis = new Date(table.start_time).getTime();
+    const totalSeconds = parseInt(table.total_seconds);
+    const cumulativePause = parseInt(table.cumulativePause) || 0;
+    
+    // Calculate elapsed time using existing function
+    const elapsedTime = getElapsedTime(startTimeMillis, cumulativePause);
+    
+    // Calculate remaining time
+    const remainingTime = totalSeconds - elapsedTime;
+    
+    // Return remaining time, or Infinity if calculation fails
+    return isNaN(remainingTime) ? Infinity : remainingTime;
+  } catch (error) {
+    console.error("Error calculating remaining time:", error);
+    return Infinity;
+  }
 }
 
 
