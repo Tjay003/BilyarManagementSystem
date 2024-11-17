@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   fetchTables();
+  fetchPrices();
 });
 
 
@@ -54,7 +55,7 @@ async function fetchTables(sortType = 'default') {
       const expectedEnd = table.timer_type === "regular" 
             ? calculateExpectedEnd(startTime, totalSeconds, tableId)
             : "N/A";
-      console.log("expectedEnd: ", expectedEnd);
+   
       // Set up Bootstrap card content
       card.innerHTML = `
                     <div class="card" id="card-${tableNumber}">
@@ -158,7 +159,7 @@ function calculateExpectedEnd(startTime, totalSeconds, tableId) {
 
 //function to save shit
 async function saveTimerSession(sessionData) {
-  console.log("Session Data that is going to be sent: ", sessionData);
+ 
   try {
     const response = await fetch("3saveTimer.php", {
       method: "POST",
@@ -168,7 +169,6 @@ async function saveTimerSession(sessionData) {
       body: JSON.stringify(sessionData),
     });
     const data = await response.json();
-    console.log("Success", data);
     // alert("timer has been saved");
 
     await fetchTables();
@@ -1124,53 +1124,76 @@ async function clearBillingLogsDatabase(timerId) {
 const priceTiers = [
   { maxMinutes: 30, price: 50 },  // 1 to 30 minutes costs 50 PHP
   { maxMinutes: 60, price: 100 }, // 31 to 60 minutes costs 100 PHP
-  { maxMinutes: 120, price: 200 }, // 61 to 120 minutes costs 200 PHP
   // Add more tiers as needed
 ];
 
-const pricePerHalfHour = 50;
-const pricePerHour = 100;
+let pricePerHalfHour;
+let pricePerHour;
 
-//will be called first when open time gets started
-function calculateOpenTimePrice(elapsedSeconds) {
-  let price = 0;
-
-  if (elapsedSeconds <= 1800) {  // Up to 30 minutes, charge for half an hour
-      price = pricePerHalfHour;
-  } else if (elapsedSeconds <= 3600) {  // Between 31 minutes and 60 minutes, charge for 1 hour
-      price = pricePerHour;
-  } else {  // For more than 1 hour, calculate for hours and remaining time
-      const hours = Math.floor(elapsedSeconds / 3600);
-      price += hours * pricePerHour;
-      const remainingSeconds = elapsedSeconds - (hours * 3600);
-      if (remainingSeconds > 0) {
-          if (remainingSeconds <= 5) {
-              price += pricePerHalfHour;
-          } else {
-              price += pricePerHour;
-          }
-      }
-  }
-
-  return price;
-}
-
-// Calculate price based on additional time in seconds
-function calculatePrice(additionalTimeInSeconds) {
-  const minutes = additionalTimeInSeconds / 60;
-
-  // Find the price tier that fits the time range
-  for (const tier of priceTiers) {
-    if (minutes <= tier.maxMinutes) {
-      return tier.price;
+// Add this function to fetch prices from the database
+async function fetchPrices() {
+    try {
+        const response = await fetch('11getPrices.php');
+        const data = await response.json();
+        
+        if (data.success) {
+            pricePerHalfHour = data.prices.half_hour_price;
+            pricePerHour = data.prices.hour_price;
+            
+            // Update price tiers
+            priceTiers[0] = { maxMinutes: 30, price: pricePerHalfHour };
+            priceTiers[1] = { maxMinutes: 60, price: pricePerHour };
+            
+            console.log('Prices fetched:', { halfHour: pricePerHalfHour, hour: pricePerHour });
+        } else {
+            console.error('Failed to fetch prices');
+        }
+    } catch (error) {
+        console.error('Error fetching prices:', error);
     }
-  }
-  
-  // For times beyond the defined tiers
-  console.log("Time exceeds the defined limits. Adjust price tiers if needed.");
-  return null; // Handle or calculate further based on custom requirements
 }
 
+
+
+// Update the calculateOpenTimePrice function
+function calculateOpenTimePrice(elapsedSeconds) {
+    let price = 0;
+
+    if (elapsedSeconds <= 1800) {  // Up to 30 minutes
+        price = pricePerHalfHour;
+    } else if (elapsedSeconds <= 3600) {  // Between 31 minutes and 60 minutes
+        price = pricePerHour;
+    } else {  // For more than 1 hour
+        const hours = Math.floor(elapsedSeconds / 3600);
+        price += hours * pricePerHour;
+        const remainingSeconds = elapsedSeconds - (hours * 3600);
+        if (remainingSeconds > 0) {
+            if (remainingSeconds <= 1800) { // 30 minutes or less
+                price += pricePerHalfHour;
+            } else {
+                price += pricePerHour;
+            }
+        }
+    }
+
+    return price;
+}
+
+// Update the calculatePrice function
+function calculatePrice(additionalTimeInSeconds) {
+    const minutes = additionalTimeInSeconds / 60;
+
+    // Find the price tier that fits the time range
+    for (const tier of priceTiers) {
+        if (minutes <= tier.maxMinutes) {
+            return tier.price;
+        }
+    }
+    
+    // For times beyond the defined tiers, calculate based on hours
+    const hours = Math.ceil(minutes / 60);
+    return hours * pricePerHour;
+}
 
 // Handle Confirm Delete Button Click
 document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {

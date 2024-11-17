@@ -1,11 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
   fetchReservations();
   fetchTables();
-  // // Add periodic refresh
-  // setInterval(() => {
-  //   fetchReservations();
-  //   fetchTables();
-  // }, 15000); // Fetch every 15 seconds
+  // Add periodic refresh
+  setInterval(() => {
+    fetchReservations();
+    fetchTables();
+    console.log("automatic gets refreshed");
+  }, 15000); // Fetch every 15 seconds
 });
 // Fetch data from the server using AJAX
 async function fetchReservations() {
@@ -101,7 +102,6 @@ try {
     const expectedEnd = table.timer_type === "regular" 
           ? calculateExpectedEnd(startTime, totalSeconds, tableId)
           : "N/A";
-    console.log("expectedEnd: ", expectedEnd);
     // Set up Bootstrap card content
     card.innerHTML = `
                   <div class="card" id="card-${tableNumber}">
@@ -196,7 +196,6 @@ const timerTypeMap = new Map();     // Stores start times by timerId
 // Initialization of the timer function
 function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulativePause, status, tableId, tableNumb, expectedEnd) {
 // Clear any existing timer for the specific table
-console.log("expected End after initialization: ", expectedEnd);
 if (timerIntervals.has(tableId)) {
   clearInterval(timerIntervals.get(tableId));
 }
@@ -221,14 +220,15 @@ if (status === "paused" && pauseTime) {
 }
 
 let elapsedTime = getElapsedTime(new Date(startTime).getTime(), cumulativePauseDuration);
-console.log("elapsedTime: ", elapsedTime);
-console.log("Total Seconds", totalSeconds);
+// console.log("elapsedTime: ", elapsedTime);
+// console.log("Total Seconds", totalSeconds);
 let remainingSeconds;
 if ( status == "available") {
   remainingSeconds = parseInt(totalSeconds);
   updateRemainingTimeCard(remainingSeconds, tableId, "regular");
 } else {
-  remainingSeconds = timerType === "regular" ? parseInt(totalSeconds) - elapsedTime : elapsedTime;   console.log("RemainingSeconds after calculation", remainingSeconds);
+  remainingSeconds = timerType === "regular" ? parseInt(totalSeconds) - elapsedTime : elapsedTime;   
+  // console.log("RemainingSeconds after calculation", remainingSeconds);
 }
 
 // Initialize remainingSeconds based on timer type and elapsed time
@@ -249,7 +249,9 @@ if (status !== "available"){
       
       if (timerType === "regular") {
         if (currentRemainingSeconds <= 0) {
-          finishTimer(tableId);
+        const tableNumber = tableNumberMap.get(tableId);
+        alert(`Table ${tableNumber} has finished.`);
+          // finishTimer(tableId);
         } else {
 
           // Update the remaining seconds and display

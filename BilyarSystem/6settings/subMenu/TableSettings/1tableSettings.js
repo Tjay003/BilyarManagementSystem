@@ -6,6 +6,7 @@ let numberOfTables = document.querySelector("#numberOfTables");
 // Fetch tables from the database when the page is loaded
 window.onload = function () {
   fetchTables();
+  loadPrices();
 };
 
 document.getElementById("setTablesBtn").addEventListener("click", function () {
@@ -117,37 +118,48 @@ function renderTableInfo(tables) {
     button.addEventListener("click", function () {
       console.log("Delete button clicked!");
       const tableId = this.getAttribute("data-table");
+      console.log("tableId: ", tableId);
       deleteTable(tableId); // Call the delete function
     });
   });
 }
 
+// Then modify your deleteTable function to just set the table ID
 function deleteTable(tableId) {
-  let currentTableId = tableId; // Store the current table ID to be deleted
-
-  document
-    .getElementById("confirmDeleteBtn")
-    .addEventListener("click", function () {
-      fetch("5deleteTable.php", {
+  document.getElementById("confirmDeleteBtn").setAttribute("data-table-id", tableId);
+}
+// First, add a single event listener for the confirm delete button outside of the deleteTable function
+document.getElementById("confirmDeleteBtn").addEventListener("click", function() {
+    const tableId = this.getAttribute("data-table-id");
+    if (!tableId) return;
+    
+    fetch("5deleteTable.php", {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: `id=${currentTableId}`,
-      })
-        .then((response) => response.json())
-        .then((result) => {
-          if (result.success) {
-            fetchTables(); // Refresh the table info after deletion
-            currentTableId = null; // Reset deleteId
-          $("#deleteModal").modal("hide");
-          } else {
+        body: `id=${tableId}`,
+    })
+    .then(async (response) => {
+        const text = await response.text(); // Get response as text first
+        try {
+            return JSON.parse(text); // Try to parse it as JSON
+        } catch (e) {
+            console.error('Server response:', text); // Log the actual response
+            throw new Error('Invalid JSON response from server');
+        }
+    })
+    .then((result) => {
+        if (result.success) {
+            fetchTables();
+            $("#deleteModal").modal("hide");
+        } else {
             alert("Failed to delete table: " + result.error);
-          }
-        })
-        .catch((error) => console.error("Error:", error));
-    });
-}
+        }
+    })
+    .catch((error) => console.error("Error:", error));
+});
+
 
 // Handle save changes in edit modal
 document.getElementById("saveEditBtn").addEventListener("click", function() {
@@ -229,3 +241,68 @@ document.getElementById("delete").addEventListener("click", function () {
     })
     .catch(error => console.error("Error:", error));
 });
+
+// Load prices when page loads
+function loadPrices() {
+    fetch('11getPrices.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('halfHourPrice').value = data.prices.half_hour_price;
+                document.getElementById('hourPrice').value = data.prices.hour_price;
+                // Update display of current prices
+                document.getElementById('currentHalfHourPrice').textContent = 
+                    `Current Half Hour Price: PHP ${parseFloat(data.prices.half_hour_price).toFixed(2)}`;
+                document.getElementById('currentHourPrice').textContent = 
+                    `Current Hour Price: PHP ${parseFloat(data.prices.hour_price).toFixed(2)}`;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Save half hour price
+document.getElementById('saveHalfHourBtn').addEventListener('click', function() {
+    const halfHourPrice = document.getElementById('halfHourPrice').value;
+    
+    fetch('10savePrices.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `type=half_hour&price=${halfHourPrice}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Half hour price saved successfully!');
+            loadPrices(); // Reload prices to update display
+        } else {
+            alert('Failed to save price: ' + data.error);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+// Save hour price
+document.getElementById('saveHourBtn').addEventListener('click', function() {
+    const hourPrice = document.getElementById('hourPrice').value;
+    
+    fetch('10savePrices.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `type=hour&price=${hourPrice}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Hour price saved successfully!');
+            loadPrices(); // Reload prices to update display
+        } else {
+            alert('Failed to save price: ' + data.error);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+

@@ -5,6 +5,9 @@ $current_page = basename($_SERVER['PHP_SELF']); // Get the current page name
 // Check the user role from the session
 $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'guest'; // Default to 'guest' if not logged in
 
+// Define pages arrays
+$fmPages = ['finance.php', 'dataLogs.php'];
+$settingsPages = ['employeeManagement.php', 'registration.php', 'tableSettings.php'];
 ?>
 
 
@@ -41,62 +44,57 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'guest'; // Default t
       </a>
     </li>
 
-    <?php
-    $fmPages = ['finance.php', 'dataLogs.php'];
-    ?>
-
+    <!-- Financial Management (Admin and Manager Only) -->
+    <?php if (in_array($userRole, ['admin', 'manager'])): ?>
     <li class="sidebar-item">
-      <button onclick="toggleSubMenu(this)"
-        class=" <?= in_array($current_page, $fmPages) ? 'active' : '' ?> dropdown-btn ">
+      <button onclick="toggleSubMenu(this)" 
+        class="<?= in_array($current_page, $fmPages) ? 'active' : '' ?> dropdown-btn">
         <i><span class="logo material-symbols-outlined">analytics</span></i>
         <span class="span">Financial Management</span>
-        <i><span class="material-symbols-outlined">
-            keyboard_arrow_down
-          </span></i>
+        <i><span class="material-symbols-outlined">keyboard_arrow_down</span></i>
       </button>
       <ul class="sub-menu">
         <div>
-          <li class="<?= $current_page == 'finance.php' ? 'active' : '' ?> sidebar-item"><a
-              href="/Bilyar4/BilyarSystem/5finance/finance.php">Data Analytics</a></li>
-          <li class="<?= $current_page == 'dataLogs.php' ? 'active' : '' ?> sidebar-item"><a
-              href="/Bilyar4/BilyarSystem/5finance/dataLogs.php">Data Logs</a></li>
+          <li class="<?= $current_page == 'finance.php' ? 'active' : '' ?> sidebar-item">
+            <a href="/Bilyar4/BilyarSystem/5finance/finance.php">Data Analytics</a>
+          </li>
+          <li class="<?= $current_page == 'dataLogs.php' ? 'active' : '' ?> sidebar-item">
+            <a href="/Bilyar4/BilyarSystem/5finance/dataLogs.php">Data Logs</a>
+          </li>
         </div>
       </ul>
     </li>
+    <?php endif; ?>
 
-    <?php
-    $settingsPages = ['employeeManagement.php', 'registration.php', 'tableSettings.php'];
-    ?>
-
+    <!-- Settings (Admin and Manager Only) -->
+    <?php if (in_array($userRole, ['admin', 'manager'])): ?>
     <li class="sidebar-item">
-      <button onclick="toggleSubMenu(this)"
-        class="<?= in_array($current_page, $settingsPages) ? 'active' : '' ?> dropdown-btn ">
-        <i><span class="logo material-symbols-outlined"> settings </span></i>
+      <button onclick="toggleSubMenu(this)" 
+        class="<?= in_array($current_page, $settingsPages) ? 'active' : '' ?> dropdown-btn">
+        <i><span class="logo material-symbols-outlined">settings</span></i>
         <span class="span">Settings</span>
-        <i><span class="material-symbols-outlined">
-            keyboard_arrow_down
-          </span></i>
+        <i><span class="material-symbols-outlined">keyboard_arrow_down</span></i>
       </button>
       <ul class="sub-menu">
         <div>
-          <li class="<?= $current_page == 'tableSettings.php' ? 'active' : '' ?> sidebar-item"><a
-              href="/Bilyar4/BilyarSystem/6settings/subMenu/TableSettings/tableSettings.php">Table Settings</a></li>
-          <li class="<?= $current_page == 'employeeManagement.php' ? 'active' : '' ?> sidebar-item"><a
-              href="/Bilyar4/BilyarSystem/6settings/subMenu/employeeManagement/employeeManagement.php">Employee
-              Management</a></li>
-          <li class="<?= $current_page == 'registration.php' ? 'active' : '' ?> sidebar-item"><a
-              href="/Bilyar4/BilyarSystem/6settings/subMenu/registration/registration.php">Registration</a></li>
+          <li class="<?= $current_page == 'tableSettings.php' ? 'active' : '' ?> sidebar-item">
+            <a href="/Bilyar4/BilyarSystem/6settings/subMenu/TableSettings/tableSettings.php">Table Settings</a>
+          </li>
+          <li class="<?= $current_page == 'employeeManagement.php' ? 'active' : '' ?> sidebar-item">
+            <a href="/Bilyar4/BilyarSystem/6settings/subMenu/employeeManagement/employeeManagement.php">Employee Management</a>
+          </li>
+          <li class="<?= $current_page == 'registration.php' ? 'active' : '' ?> sidebar-item">
+            <a href="/Bilyar4/BilyarSystem/6settings/subMenu/registration/registration.php">Registration</a>
+          </li>
         </div>
       </ul>
     </li>
-  
+    <?php endif; ?>
 
-
-
-
+    <!-- Logout (Available to all roles) -->
     <li class="sidebar-item">
-      <a href="/Bilyar4/LogIn.html" class="sidebar-link">
-        <i><span class="logo material-symbols-outlined"> logout </span></i>
+      <a href="/Bilyar4/BilyarSystem/7login/4logout.php" class="sidebar-link">
+        <i><span class="logo material-symbols-outlined">logout</span></i>
         <span class="span">Log-out</span>
       </a>
     </li>

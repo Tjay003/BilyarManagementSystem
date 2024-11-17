@@ -1,3 +1,10 @@
+<?php
+require_once '../1nav/sessionCheck.php';
+// Only admin and manager can access
+checkRole(['admin', 'manager']);
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 

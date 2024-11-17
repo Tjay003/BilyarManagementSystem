@@ -1,3 +1,9 @@
+<?php
+require_once '../../../1nav/sessionCheck.php';
+// Only admin and manager can access
+checkRole(['admin', 'manager']);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -18,75 +24,137 @@
   <?php include '../../../1nav/aside.php'; ?>
 
   <main>
-    <div class="container tableSettings my-4">
+    <div class="tableSettings my-4">
       <h2 class="text-center">Table Settings</h2>
 
       <!-- Input for number of tables -->
-      <div class="d-flex justify-content-start mb-4 mt-4 align-items-center">
-        <!-- Label for the input field -->
-        <label for="tableCount" class="mr-2">Enter the Total Number of Tables:</label>
-        <input type="number" class="form-control w-25" id="tableCount" placeholder="Enter number of tables" min="0"
-          aria-label="Number of tables">
-        <button class="btn btn-primary mx-2" id="setTablesBtn">Set Tables</button>
-        <button class="btn btn-secondary" id="decrementBtn">-</button>
-        <button class="btn btn-secondary mx-2" id="incrementBtn">+</button>
+      <div class="container-fluid px-4">
+        <!-- Table Count Section -->
+        <div class="row mb-4 mt-4">
+          <div class="col-lg-6 col-md-12 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Set Total Tables</h5>
+                <div class="form-group">
+                  <label for="tableCount">Enter the Total Number of Tables:</label>
+                  <div class="input-group">
+                    <input type="number" 
+                           class="form-control" 
+                           id="tableCount" 
+                           placeholder="Enter number of tables" 
+                           min="0"
+                           aria-label="Number of tables">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" id="setTablesBtn">Set</button>
+                      <button class="btn btn-secondary" id="decrementBtn">-</button>
+                      <button class="btn btn-secondary" id="incrementBtn">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Specified Table Section -->
+          <div class="col-lg-6 col-md-12 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Add/Remove Tables</h5>
+                <div class="form-group">
+                  <label for="specifiedTable">Enter the Number of Tables:</label>
+                  <div class="input-group">
+                    <input type="number" 
+                           class="form-control" 
+                           id="specifiedTable" 
+                           placeholder="Number of tables" 
+                           min="0"
+                           aria-label="Number of tables">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" id="add">Add</button>
+                      <button class="btn btn-danger" id="delete">Remove</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price Settings Section -->
+        <div class="row mb-4">
+          <div class="col-lg-6 col-md-12 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Price Settings</h5>
+                <div class="form-group mb-3">
+                  <label>Half Hour Price (PHP)</label>
+                  <div class="input-group">
+                    <input type="number" 
+                           class="form-control" 
+                           id="halfHourPrice" 
+                           min="0" 
+                           step="0.01">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" id="saveHalfHourBtn">Save</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Hour Price (PHP)</label>
+                  <div class="input-group">
+                    <input type="number" 
+                           class="form-control" 
+                           id="hourPrice" 
+                           min="0" 
+                           step="0.01">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" id="saveHourBtn">Save</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Price Info Section -->
+          <div class="col-lg-6 col-md-12 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Current Settings</h5>
+                <div class="price-info">
+                  <p class="mb-2" id="currentHalfHourPrice">Current Half Hour Price: PHP 0.00</p>
+                  <p class="mb-2" id="currentHourPrice">Current Hour Price: PHP 0.00</p>
+                  <p class="mb-0" id="numberOfTables">Total Number of Tables: </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tables List Section -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Tables List</h5>
+                <div class="table-responsive">
+                  <table class="table table-striped table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Table Number</th>
+                        <th class="text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tableInfoBody">
+                      <!-- Table rows will be generated here -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-
-      <!-- Input for number of tables -->
-      <div class="d-flex justify-content-start mb-4 mt-4 align-items-center">
-        <!-- Label for the input field -->
-        <label for="specifiedTable" class="mr-2">Enter the Number of Tables to Add or Remove:</label>
-        <input type="number" class="form-control w-25" id="specifiedTable" placeholder="Number of tables" min="0"
-          aria-label="Number of tables">
-        <button class="btn btn-secondary mx-2" id="add">Add</button>
-        <button class="btn btn-secondary" id="delete">Delete</button>
-      </div>
-
-      <!-- Input for number of tables -->
-      <div class="d-flex justify-content-start mt-4 align-items-center">
-        <!-- Label for the input field -->
-        <label for="" class="mr-2">Table Pricing:</label>
-      </div>
-      <!-- Input for number of tables -->
-      <div class="d-flex justify-content-start mb-2 align-items-center">
-        <!-- Label for the input field -->
-        <label for="pricinghalf" class="mr-2">For every half hour / 30mins</label>
-        <input type="number" class="form-control w-25" id="pricinghalf" placeholder="30mins" min="0"
-          aria-label="Number of tables">
-        <button class="btn btn-primary mx-2" id="updateHalf">update</button>
-
-      </div>
-      <div class="d-flex justify-content-start mb-4 align-items-center">
-        <!-- Label for the input field -->
-        <label for="pricinghourly" class="mr-2">For every hour / 1hour</label>
-        <input type="number" class="form-control w-25" id="pricinghourly" placeholder="1hour" min="0"
-          aria-label="Number of tables">
-        <button class="btn btn-primary mx-2" id="updateHour">update</button>
-      </div>
-  
-
-
-      <!-- Increment and Decrement Buttons -->
-      <div class="d-flex justify-content-around ">
-        <p id="numberOfTables">Total Number of Tables: </p>
-        <p>Half Hour Price: PHP 36</p>
-        <p>1 Hour Price: PHP 72</p>
-      </div>
-
-      <!-- Generated Tables Information -->
-      <table class="table table-striped table-bordered">
-        <thead>
-          <tr>
-            <th>Table Number <button class="btn btn-sm btn-light" id="sortTableBtn">Sort</button></th>
-            <th class="text-center">Action</th>
-          </tr>
-        </thead>
-        <!-- tableInfoBody Variable -->
-        <tbody id="tableInfoBody">
-          <!-- Table rows will be generated here -->
-        </tbody>
-      </table>
     </div>
 
     <!-- Delete Confirmation Modal -->

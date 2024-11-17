@@ -10,41 +10,52 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="LoginStyles.css?v=<?php echo time(); ?>" />
-
-
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   </head>
   <body>
-    <div class="top container">
+    <!-- <div class="top container">
         <a href="customerDisplay.html" class="btn btn-secondary mt-4">Go Back</a>
-    </div>
+    </div> -->
     <div class="main">
       <div class="login-container mt-5">
-        <h2 class="text-center">Login</h2>
-        <form>
+        <div class="logo-container">
+            <!-- Add your logo image here -->
+            <img src="../../images/logo/3wTextTransparent.png" alt="Better Billiards Logo">
+        </div>
+        <h4 class="text-center">Welcome Back</h4>
+        <form action="3LoginProcess.php" method="POST">
+          <?php if (isset($_GET['error'])) { ?>
+            <div class="alert alert-danger" role="alert">
+              <?php echo htmlspecialchars($_GET['error']); ?>
+            </div>
+          <?php } ?>
           <div class="form-group">
             <label for="username" class="text-dark">Username</label>
+            <i class="fas fa-user"></i>
             <input
               type="text"
               class="form-control"
               id="username"
+              name="username"
               placeholder="Enter your username"
               required
             />
           </div>
           <div class="form-group">
             <label for="password" class="text-dark">Password</label>
+            <i class="fas fa-lock"></i>
             <input
               type="password"
               class="form-control"
               id="password"
+              name="password"
               placeholder="Enter your password"
               required
             />
-          </div class="loginBtn">
-          <button type="submit" class="btn btn-primary btn-block">Login</button>
-          <div class="text-center mt-3">
-            <a href="/Bilyar4/BilyarSystem/2dashboard/dashboard.php">Forgot Password?</a>
           </div>
+          <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+          
         </form>
       </div>
     </div>

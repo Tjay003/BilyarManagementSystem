@@ -1,3 +1,8 @@
+<?php
+require_once '../1nav/sessionCheck.php';
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 

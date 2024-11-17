@@ -52,16 +52,12 @@ body {
 
 .main .login-container {
     max-width: 400px;
-    /* Set max width for the form */
-    padding: 30px;
-    /* Padding inside the form */
+    padding: 40px;
     border-radius: 15px;
-    /* Rounded corners */
     background-color: #CBD2A4;
-    /* Light greenish background */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    /* Soft shadow for depth */
     transition: 300ms all ease;
+    animation: fadeIn 0.5s ease-in;
 }
 
 .main .login-container:hover {
@@ -69,8 +65,7 @@ body {
 }
 
 
-h2 {
-    margin-bottom: 20px;
+h4 {
     /* Margin below heading */
     font-weight: bold;
     /* Bold heading */
@@ -95,6 +90,10 @@ h2 {
     /* No border */
     border-radius: 10px;
     /* Rounded corners */
+    height: 45px;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
 }
 
 .btn-primary:hover {
@@ -180,8 +179,7 @@ h2 {
 }
 
 .mainContainerCustomerDisplay h3 {
-    color: var(--text);
-    font-weight: bold;
+    color: #9A7E6F;
     /* Color for section headings */
 }
 
@@ -297,34 +295,42 @@ h2 {
 
 }
 
-.logo-img {
-    max-height: 250px;
-    width: auto;
-    margin-bottom: -20px;
-    /* Optional styling */
-    /* Add a subtle shadow */
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+/* Add new styles */
+.logo-container {
+    text-align: center;
 }
 
-/* If you want the logo to be smaller on mobile devices */
-@media (max-width: 768px) {
-    .logo-img {
-        max-height: 200px;
+.logo-container img {
+    width: 200px;
+    height: auto;
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.form-group i {
+    position: absolute;
+    left: 15px;
+    top: 45px;
+    color: #9A7E6F;
+}
+
+.form-group input {
+    padding-left: 40px;
+    height: 45px;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
     }
-
-    h5{
-        font-size: 1rem;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
-
-.address-text a {
-    color: var(--text); /* Replace with your desired color (hex, rgb, etc.) */
-    text-decoration: none; /* Optional: removes underline */
-}
-
-/* Optional: Add hover effect */
-.address-text a:hover {
-    color: var(--color3);
-}
-
-

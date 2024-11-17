@@ -16,14 +16,13 @@
 <body>
   <div class="mainContainerCustomerDisplay container full-height">
     <!-- Heading -->
-    <div class="mt-4 d-flex justify-content-end">
+    <!-- <div class="mt-4 d-flex justify-content-end">
       <a href="LogIn.html" class="btn btn-secondary">Dashboard</a>
-    </div>
-    <div class="text-center mb-4">
-      <h1>Better Billiards</h1>
-      <h5>
-        <!-- <a href="" target="_blank" class="text-primary">1234 Main St,
-          City, Country</a> -->
+    </div> -->
+    <div class="text-center mt-4">
+      <img src="../images/logo/3wTextTransparent.png" alt="Better Billiards Logo" class="logo-img"/>
+      <h5 class="address-text mb-5">
+        <a href="https://www.google.com/maps/place/Better+Billiards+Intramuros/@14.5924844,120.9778853,19.19z/data=!4m15!1m8!3m7!1s0x3397ca3d1375e1fb:0x49ebfa658c0ba08!2sIntramuros,+Maynila,+1002+Kalakhang+Maynila!3b1!8m2!3d14.5895972!4d120.9747258!16zL20vMDNiNWps!3m5!1s0x3397cb367a232a43:0x6dfb616080623d18!8m2!3d14.5925209!4d120.977875!16s%2Fg%2F11vc5pnb41?entry=ttu&g_ep=EgoyMDI0MTExMy4xIKXMDSoASAFQAw%3D%3D" target="_blank">478 San Juan de Letran, Intramuros, Manila</a>
       </h5>
     </div>
 
