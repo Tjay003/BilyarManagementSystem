@@ -114,6 +114,24 @@ main .container .table thead{
 
 }
 
+#receiptContent .mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+#receiptContent hr {
+    border-top: 1px solid #ddd;
+    width: 100%;
+}
+
+#receiptContent h4 {
+    font-weight: bold;
+    color: #333;
+}
+
+.logo-img{
+    margin-bottom: -20px;
+}
+
 
 
 .btn-secondary {

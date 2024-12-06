@@ -41,6 +41,7 @@ function renderTableInfo(tables) {
         const formattedStartTime = formatDateTime(table.startTime);
         const formattedSavedTime = formatDateTime(table.savedTime);
         const row = `<tr id="tableRow-${table.sessionID}">
+                        <td>${table.sessionID}</td>
                         <td>${table.tableNumber}</td>
                         <td>${formattedStartTime}</td>
                         <td>${formattedSavedTime}</td>
@@ -231,3 +232,113 @@ function sortTable(column) {
 }
 
 sortTable('savedTime');
+
+// ... existing code ...
+document.getElementById("exportToExcel").addEventListener("click", showExportPreview);
+// Add this function after your existing functions
+function showExportPreview() {
+    const previewHeader = document.getElementById('previewHeader');
+    const previewBody = document.getElementById('previewBody');
+    
+    // Set up headers
+    const headers = [
+        'Session ID',
+        'Table Number', 
+        'Start Time', 
+        'Saved Time', 
+        'Total Bill Amount',
+        'Total Duration',
+        'Timer Type',
+        'Total Paid',
+        'Total Unpaid'
+    ];
+
+    // Create header row
+    previewHeader.innerHTML = `
+        <tr>
+            ${headers.map(header => `<th>${header}</th>`).join('')}
+        </tr>
+    `;
+
+    // Create preview rows (showing first 5 entries)
+    previewBody.innerHTML = tables.slice(0, 5).map(table => `
+        <tr>  
+            <td>${table.sessionID}</td>
+            <td>${table.tableNumber}</td>
+            <td>${formatDateTime(table.startTime)}</td>
+            <td>${formatDateTime(table.savedTime)}</td>
+            <td>${table.totalBillAmount}</td>
+            <td>${table.totalDurationSeconds}</td>
+            <td>${table.timerType}</td>
+            <td>${table.totalBillPaid}</td>
+            <td>${table.totalBillUnpaid}</td>
+        </tr>
+    `).join('') + `
+        <tr>
+            <td colspan="8" class="text-center">
+                <em>Preview showing first 5 rows of ${tables.length} total rows...</em>
+            </td>
+        </tr>
+    `;
+
+    // Show the modal
+    const previewModal = new bootstrap.Modal(document.getElementById('exportPreviewModal'));
+    previewModal.show();
+}
+
+function exportToExcel() {
+    // Create CSV content
+    let csvContent = "Session ID, Table Number,Start Time,Saved Time,Total Bill Amount,Total Duration,Timer Type,Total Paid,Total Unpaid\n";
+    
+    tables.forEach(table => {
+        const formattedStartTime = formatDateTime(table.startTime);
+        const formattedSavedTime = formatDateTime(table.savedTime);
+        
+        // Escape values that might contain commas by wrapping them in quotes
+        const escapeCsvValue = (value) => {
+            if (value === null || value === undefined) return '""';
+            return `"${value.toString().replace(/"/g, '""')}"`;
+        };
+        
+        const row = [
+            escapeCsvValue(table.sessionID),
+            escapeCsvValue(table.tableNumber),
+            escapeCsvValue(formattedStartTime),
+            escapeCsvValue(formattedSavedTime),
+            escapeCsvValue(table.totalBillAmount),
+            escapeCsvValue(table.totalDurationSeconds),
+            escapeCsvValue(table.timerType),
+            escapeCsvValue(table.totalBillPaid),
+            escapeCsvValue(table.totalBillUnpaid)
+        ].join(',');
+        
+        csvContent += row + "\n";
+    });
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", "billiards_data_" + new Date().toISOString().split('T')[0] + ".csv");
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Close the modal after export
+    const previewModal = bootstrap.Modal.getInstance(document.getElementById('exportPreviewModal'));
+    previewModal.hide();
+}
+
+// Update event listeners
+document.addEventListener("DOMContentLoaded", function() {
+    // ... existing DOMContentLoaded code ...
+    
+    // Change the export button to show preview first
+    document.getElementById("exportToExcel").addEventListener("click", showExportPreview);
+    
+    // Add listener for the confirm export button
+    document.getElementById("confirmExport").addEventListener("click", exportToExcel);
+});

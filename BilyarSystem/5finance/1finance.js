@@ -131,6 +131,36 @@ function createRevenueChart(aggregatedData) {
             }
         }
     });
+
+    const total = data.reduce((a, b) => a + b, 0);
+    const average = total / data.length;
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    const maxDate = labels[data.indexOf(max)];
+    const minDate = labels[data.indexOf(min)];
+    const period = document.getElementById('aggregationSelect').value;
+
+    // Create detailed interpretation using HTML
+    const interpretation = `
+        <strong>Based on the ${period} revenue analysis:</strong><br>
+        <ul>
+            <li>Total Revenue: ₱${total.toFixed(2)}</li>
+            <li>Average ${period} Revenue: ₱${average.toFixed(2)}</li>
+            <li>Peak Revenue: ₱${max.toFixed(2)} (${maxDate})</li>
+            <li>Lowest Revenue: ₱${min.toFixed(2)} (${minDate})</li>
+        </ul>
+        <strong>Performance Analysis:</strong><br>
+        <p>${data[data.length-1] > average 
+            ? `The current period shows strong performance with revenue above the average by ₱${(data[data.length-1] - average).toFixed(2)}.`
+            : `The current period is performing below average by ₱${(average - data[data.length-1]).toFixed(2)}, suggesting potential areas for improvement.`
+        }</p>
+    `;
+
+    // Update the interpretation element using innerHTML instead of textContent
+    const interpretationElement = document.getElementById('revenueInterpretation');
+    if (interpretationElement) {
+        interpretationElement.innerHTML = interpretation;
+    }
 }
 initializeChartForTotalRevenue();
 
@@ -225,6 +255,32 @@ function createRevenuePerTableChart(aggregatedData) {
             }
         }
     });
+    // Calculate statistics for interpretation
+    const total = aggregatedData.reduce((sum, [_, revenue]) => sum + revenue, 0);
+    const average = total / aggregatedData.length;
+    const highestTable = aggregatedData[0];
+    const lowestTable = aggregatedData[aggregatedData.length - 1];
+
+    const interpretation = `
+        <strong>Table Revenue Analysis:</strong><br>
+        <ul>
+            <li>Total Revenue Across Tables: ₱${total.toFixed(2)}</li>
+            <li>Average Revenue per Table: ₱${average.toFixed(2)}</li>
+            <li>Highest Performing Table: Table ${highestTable[0]} (₱${highestTable[1].toFixed(2)})</li>
+            <li>Lowest Performing Table: Table ${lowestTable[0]} (₱${lowestTable[1].toFixed(2)})</li>
+        </ul>
+        <strong>Performance Analysis:</strong><br>
+        <p>Table ${highestTable[0]} is generating ${((highestTable[1]/total)*100).toFixed(1)}% of total revenue. 
+        ${highestTable[1] > average * 1.5 ? 
+            'This table is significantly outperforming others and may indicate optimal placement or condition.' : 
+            'Revenue distribution across tables is relatively balanced.'}</p>
+    `;
+
+    const interpretationElement = document.getElementById('tableRevenueInterpretation');
+    if (interpretationElement) {
+        interpretationElement.innerHTML = interpretation;
+    }
+
 }
 initializeChartForRevenuePertable()
 
@@ -298,6 +354,30 @@ function createRevenueByTimerType(aggregatedData, aggregationType) {
             
         },
     });
+
+    const total = Object.values(aggregatedData).reduce((a, b) => a + b, 0);
+    const timerTypes = Object.entries(aggregatedData);
+
+    const interpretation = `
+        <strong>Timer Type Revenue Distribution:</strong><br>
+        <ul>
+            <li>Total Revenue: ₱${total.toFixed(2)}</li>
+            ${timerTypes.map(([type, amount]) => 
+                `<li>${type}: ₱${amount.toFixed(2)} (${((amount/total)*100).toFixed(1)}%)</li>`
+            ).join('')}
+        </ul>
+        <strong>Analysis:</strong><br>
+        <p>The ${timerTypes[0][0]} timer type is the most used, generating 
+        ${((timerTypes[0][1]/total)*100).toFixed(1)}% of total revenue. 
+        ${timerTypes[0][1] > total * 0.7 ? 
+            'This suggests a strong customer preference for this timer type.' : 
+            'Revenue is fairly distributed across timer types.'}</p>
+    `;
+
+    const interpretationElement = document.getElementById('timerTypeInterpretation');
+    if (interpretationElement) {
+        interpretationElement.innerHTML = interpretation;
+    }
 }
 initializeChartForRevenueByTimerType();
 
@@ -424,6 +504,45 @@ function createUnpaidBillsAnalysisChart(aggregatedData) {
             }
         }
     });
+
+    // Get the latest period's data
+    const currentPeriod = labels[labels.length - 1];
+    const currentPeriodData = {
+        totalPaid: paidData[paidData.length - 1],
+        totalUnpaid: unpaidData[unpaidData.length - 1],
+        totalBill: totalBillData[totalBillData.length - 1]
+    };
+
+    const periodUnpaidPercentage = (currentPeriodData.totalUnpaid / currentPeriodData.totalBill) * 100;
+    const period = document.getElementById('UnpaidBillsAggregated').value;
+
+    const interpretation = `
+        <strong>Current ${period.charAt(0).toUpperCase() + period.slice(1)} Analysis (${currentPeriod}):</strong><br>
+        <ul>
+            <li>${period.charAt(0).toUpperCase() + period.slice(1)} Total Bill: ₱${currentPeriodData.totalBill.toFixed(2)}</li>
+            <li>${period.charAt(0).toUpperCase() + period.slice(1)} Total Paid: ₱${currentPeriodData.totalPaid.toFixed(2)}</li>
+            <li>${period.charAt(0).toUpperCase() + period.slice(1)} Total Unpaid: ₱${currentPeriodData.totalUnpaid.toFixed(2)}</li>
+            <li>${period.charAt(0).toUpperCase() + period.slice(1)} Unpaid Percentage: ${periodUnpaidPercentage.toFixed(1)}%</li>
+        </ul>
+        <strong>${period.charAt(0).toUpperCase() + period.slice(1)} Risk Assessment:</strong><br>
+        <p>${periodUnpaidPercentage > 10 ? 
+            `The current ${period} unpaid rate of ${periodUnpaidPercentage.toFixed(1)}% is above recommended levels and requires attention.` : 
+            `The ${period} unpaid rate is within acceptable range at ${periodUnpaidPercentage.toFixed(1)}%.`}</p>
+        <strong>Recommendations:</strong><br>
+        <p>${periodUnpaidPercentage > 10 ? 
+            `• Immediate review of ${period} payment collection needed<br>
+             • Consider stricter payment policies for this ${period}<br>
+             • Follow up on current ${period}'s outstanding payments` : 
+            `• Continue effective ${period} payment collection<br>
+             • Maintain current payment policies<br>
+             • Monitor ${period} payment patterns`
+        }</p>
+    `;
+
+    const interpretationElement = document.getElementById('unpaidBillsInterpretation');
+    if (interpretationElement) {
+        interpretationElement.innerHTML = interpretation;
+    }
 }
 initializeChartForUnpaidBills();
 
@@ -523,6 +642,375 @@ function createUtilizationRateChart(aggregatedData, aggregationType) {
             }
         }
     });
+
+    const values = Object.values(aggregatedData);
+    const avgHours = (values.reduce((a, b) => a + b, 0) / values.length / 3600).toFixed(2);
+    const maxHours = (Math.max(...values) / 3600).toFixed(2);
+    const minHours = (Math.min(...values) / 3600).toFixed(2);
+
+    const interpretation = `
+        <strong>${aggregationType.charAt(0).toUpperCase() + aggregationType.slice(1)} Utilization Analysis:</strong><br>
+        <ul>
+            <li>Average Utilization: ${avgHours} hours</li>
+            <li>Peak Utilization: ${maxHours} hours</li>
+            <li>Lowest Utilization: ${minHours} hours</li>
+        </ul>
+        <strong>Efficiency Analysis:</strong><br>
+        <p>${avgHours > 12 ? 
+            `Tables are being well-utilized with an average of ${avgHours} hours per ${aggregationType} period.` : 
+            `There may be opportunity to increase utilization from the current ${avgHours} hours per ${aggregationType} period.`}</p>
+    `;
+
+    const interpretationElement = document.getElementById('utilizationRateInterpretation');
+    if (interpretationElement) {
+        interpretationElement.innerHTML = interpretation;
+    }
 }
 
 initializeChartForUtilizationRates()
+
+async function exportAnalyticsReport() {
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // 1. Total Revenue Sheet
+    const revenueData = await prepareRevenueSheet();
+    const revenueSheet = XLSX.utils.aoa_to_sheet(revenueData);
+    XLSX.utils.book_append_sheet(workbook, revenueSheet, "Total Revenue");
+
+    // 2. Table Revenue Sheet
+    const tableRevenueData = await prepareTableRevenueSheet();
+    const tableRevenueSheet = XLSX.utils.aoa_to_sheet(tableRevenueData);
+    XLSX.utils.book_append_sheet(workbook, tableRevenueSheet, "Table Revenue");
+
+    // 3. Timer Type Revenue Sheet
+    const timerTypeData = await prepareTimerTypeSheet();
+    const timerTypeSheet = XLSX.utils.aoa_to_sheet(timerTypeData);
+    XLSX.utils.book_append_sheet(workbook, timerTypeSheet, "Timer Type Analysis");
+
+    // 4. Unpaid Bills Sheet
+    const unpaidBillsData = await prepareUnpaidBillsSheet();
+    const unpaidBillsSheet = XLSX.utils.aoa_to_sheet(unpaidBillsData);
+    XLSX.utils.book_append_sheet(workbook, unpaidBillsSheet, "Unpaid Bills");
+
+    // 5. Utilization Rates Sheet
+    const utilizationData = await prepareUtilizationSheet();
+    const utilizationSheet = XLSX.utils.aoa_to_sheet(utilizationData);
+    XLSX.utils.book_append_sheet(workbook, utilizationSheet, "Utilization Rates");
+
+    // Generate Excel file
+    const fileName = `billiards_analytics_report_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+}
+
+// Helper functions to prepare data for each sheet
+async function prepareRevenueSheet() {
+    const data = await fetchSessionData();
+    const aggregationType = document.getElementById('aggregationSelect').value;
+    
+    // Header rows
+    const sheet = [
+        [`Better Billiards - Revenue Analysis (${aggregationType})`],
+        [`Report Generated: ${new Date().toLocaleString()}`],
+        [],
+        ['Date', 'Revenue (PHP)']
+    ];
+
+    // Get aggregated data
+    let aggregationFunction;
+    switch (aggregationType) {
+        case 'weekly':
+            aggregationFunction = getWeekNumber;
+            break;
+        case 'monthly':
+            aggregationFunction = getMonthNumber;
+            break;
+        default:
+            aggregationFunction = getDateNumber;
+    }
+
+    const aggregatedData = aggregateDataForTotalRevenue(data, aggregationFunction);
+    
+    // Add data rows
+    Object.entries(aggregatedData).forEach(([date, revenue]) => {
+        sheet.push([date, revenue]);
+    });
+
+    // Add summary statistics
+    const values = Object.values(aggregatedData);
+    sheet.push(
+        [],
+        ['Summary Statistics'],
+        ['Total Revenue', values.reduce((a, b) => a + b, 0)],
+        ['Average Revenue', values.reduce((a, b) => a + b, 0) / values.length],
+        ['Highest Revenue', Math.max(...values)],
+        ['Lowest Revenue', Math.min(...values)]
+    );
+
+    return sheet;
+}
+
+async function prepareTableRevenueSheet() {
+    const data = await fetchSessionData();
+    
+    // Header rows
+    const sheet = [
+        ['Better Billiards - Table Revenue Analysis'],
+        [`Report Generated: ${new Date().toLocaleString()}`],
+        [],
+        ['Table Number', 'Total Revenue', 'Number of Sessions', 'Average Revenue per Session']
+    ];
+
+    // Aggregate data by table
+    const tableStats = {};
+    data.forEach(session => {
+        if (!tableStats[session.tableNumber]) {
+            tableStats[session.tableNumber] = {
+                totalRevenue: 0,
+                sessions: 0,
+            };
+        }
+        tableStats[session.tableNumber].totalRevenue += parseFloat(session.totalBillAmount);
+        tableStats[session.tableNumber].sessions++;
+    });
+
+    // Add data rows
+    Object.entries(tableStats).forEach(([tableNum, stats]) => {
+        sheet.push([
+            tableNum,
+            stats.totalRevenue,
+            stats.sessions,
+            stats.totalRevenue / stats.sessions
+        ]);
+    });
+
+    return sheet;
+}
+
+async function prepareTimerTypeSheet() {
+    const data = await fetchSessionData();
+    
+    // Header rows
+    const sheet = [
+        ['Better Billiards - Timer Type Analysis'],
+        [`Report Generated: ${new Date().toLocaleString()}`],
+        [],
+        ['Timer Type', 'Total Revenue', 'Number of Sessions', 'Average Revenue per Session']
+    ];
+
+    // Aggregate data by timer type
+    const timerTypeStats = {};
+    data.forEach(session => {
+        if (!timerTypeStats[session.timerType]) {
+            timerTypeStats[session.timerType] = {
+                totalRevenue: 0,
+                sessions: 0,
+            };
+        }
+        timerTypeStats[session.timerType].totalRevenue += parseFloat(session.totalBillAmount);
+        timerTypeStats[session.timerType].sessions++;
+    });
+
+    // Add data rows
+    Object.entries(timerTypeStats).forEach(([type, stats]) => {
+        sheet.push([
+            type,
+            stats.totalRevenue,
+            stats.sessions,
+            stats.totalRevenue / stats.sessions
+        ]);
+    });
+
+    return sheet;
+}
+
+async function prepareUnpaidBillsSheet() {
+    const data = await fetchSessionData();
+    const aggregationType = document.getElementById('UnpaidBillsAggregated').value;
+    
+    // Header rows
+    const sheet = [
+        [`Better Billiards - Unpaid Bills Analysis (${aggregationType})`],
+        [`Report Generated: ${new Date().toLocaleString()}`],
+        [],
+        ['Period', 'Total Bill', 'Paid Amount', 'Unpaid Amount', 'Payment Rate (%)', 'Risk Level']
+    ];
+
+    // Get aggregation function based on type
+    let aggregationFunction;
+    switch (aggregationType) {
+        case 'weekly':
+            aggregationFunction = getWeekNumber;
+            break;
+        case 'monthly':
+            aggregationFunction = getMonthNumber;
+            break;
+        default:
+            aggregationFunction = getDateNumber;
+    }
+
+    // Get aggregated data using the same function as the chart
+    const aggregatedData = aggregateDataForUnpaidBills(data, aggregationFunction);
+
+    // Add data rows
+    Object.entries(aggregatedData).forEach(([period, stats]) => {
+        const paymentRate = ((stats.totalPaid / stats.totalBill) * 100).toFixed(2);
+        const riskLevel = paymentRate < 90 ? 'High' : paymentRate < 95 ? 'Medium' : 'Low';
+
+        sheet.push([
+            period,
+            stats.totalBill.toFixed(2),
+            stats.totalPaid.toFixed(2),
+            stats.totalUnpaid.toFixed(2),
+            paymentRate,
+            riskLevel
+        ]);
+    });
+
+    // Add summary statistics
+    const totalBill = Object.values(aggregatedData).reduce((sum, stats) => sum + stats.totalBill, 0);
+    const totalUnpaid = Object.values(aggregatedData).reduce((sum, stats) => sum + stats.totalUnpaid, 0);
+    const totalPaid = Object.values(aggregatedData).reduce((sum, stats) => sum + stats.totalPaid, 0);
+    const overallPaymentRate = ((totalPaid / totalBill) * 100).toFixed(2);
+
+    sheet.push(
+        [],
+        ['Summary Statistics'],
+        ['Total Bill Amount', totalBill.toFixed(2)],
+        ['Total Paid Amount', totalPaid.toFixed(2)],
+        ['Total Unpaid Amount', totalUnpaid.toFixed(2)],
+        ['Overall Payment Rate', `${overallPaymentRate}%`]
+    );
+
+    return sheet;
+}
+
+async function prepareUtilizationSheet() {
+    const data = await fetchSessionData();
+    
+    // Header rows
+    const sheet = [
+        ['Better Billiards - Utilization Rates Analysis'],
+        [`Report Generated: ${new Date().toLocaleString()}`],
+        [],
+        ['Date', 'Hours Utilized', 'Number of Sessions', 'Average Session Duration (hours)']
+    ];
+
+    // Aggregate data by date
+    const utilizationStats = {};
+    data.forEach(session => {
+        const date = new Date(session.startTime).toLocaleDateString();
+        if (!utilizationStats[date]) {
+            utilizationStats[date] = {
+                totalHours: 0,
+                sessions: 0,
+            };
+        }
+        utilizationStats[date].totalHours += parseFloat(session.totalDurationSeconds) / 3600;
+        utilizationStats[date].sessions++;
+    });
+
+    // Add data rows
+    Object.entries(utilizationStats).forEach(([date, stats]) => {
+        sheet.push([
+            date,
+            stats.totalHours.toFixed(2),
+            stats.sessions,
+            (stats.totalHours / stats.sessions).toFixed(2)
+        ]);
+    });
+
+    return sheet;
+}
+
+// Individual export functions for each metric
+async function exportRevenueData() {
+    const workbook = XLSX.utils.book_new();
+    const aggregationType = document.getElementById('aggregationSelect').value;
+    
+    // Create sheets for each aggregation type
+    const types = ['daily', 'weekly', 'monthly'];
+    for (const type of types) {
+        // Temporarily set the aggregation type
+        document.getElementById('aggregationSelect').value = type;
+        await initializeChartForTotalRevenue(); // Refresh data
+        
+        const sheetData = await prepareRevenueSheet();
+        const sheet = XLSX.utils.aoa_to_sheet(sheetData);
+        XLSX.utils.book_append_sheet(workbook, sheet, `Revenue ${type}`);
+    }
+    
+    // Reset to original selection
+    document.getElementById('aggregationSelect').value = aggregationType;
+    await initializeChartForTotalRevenue();
+    
+    // Export the file
+    XLSX.writeFile(workbook, `revenue_analysis_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+async function exportTableRevenueData() {
+    const workbook = XLSX.utils.book_new();
+    const sortTypes = ['highest', 'lowest'];
+    
+    for (const type of sortTypes) {
+        document.getElementById('TableRevSelect').value = type;
+        await initializeChartForRevenuePertable();
+        
+        const sheetData = await prepareTableRevenueSheet();
+        const sheet = XLSX.utils.aoa_to_sheet(sheetData);
+        XLSX.utils.book_append_sheet(workbook, sheet, `Table Revenue ${type}`);
+    }
+    
+    XLSX.writeFile(workbook, `table_revenue_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+async function exportTimerTypeData() {
+    const workbook = XLSX.utils.book_new();
+    const chartTypes = ['bar', 'pie'];
+    
+    for (const type of chartTypes) {
+        document.getElementById('TimerTypeRevChartType').value = type;
+        await initializeChartForRevenueByTimerType();
+        
+        const sheetData = await prepareTimerTypeSheet();
+        const sheet = XLSX.utils.aoa_to_sheet(sheetData);
+        XLSX.utils.book_append_sheet(workbook, sheet, `Timer Type ${type}`);
+    }
+    
+    XLSX.writeFile(workbook, `timer_type_analysis_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+async function exportUnpaidBillsData() {
+    const workbook = XLSX.utils.book_new();
+    const types = ['daily', 'weekly', 'monthly'];
+    
+    for (const type of types) {
+        document.getElementById('UnpaidBillsAggregated').value = type;
+        await initializeChartForUnpaidBills();
+        
+        const sheetData = await prepareUnpaidBillsSheet();
+        const sheet = XLSX.utils.aoa_to_sheet(sheetData);
+        XLSX.utils.book_append_sheet(workbook, sheet, `Unpaid Bills ${type}`);
+    }
+    
+    XLSX.writeFile(workbook, `unpaid_bills_analysis_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+async function exportUtilizationData() {
+    const workbook = XLSX.utils.book_new();
+    const types = ['hourly', 'daily'];
+    
+    for (const type of types) {
+        document.getElementById('typeForUtilizationRate').value = type;
+        await initializeChartForUtilizationRates();
+        
+        const sheetData = await prepareUtilizationSheet();
+        const sheet = XLSX.utils.aoa_to_sheet(sheetData);
+        XLSX.utils.book_append_sheet(workbook, sheet, `Utilization ${type}`);
+    }
+    
+    XLSX.writeFile(workbook, `utilization_analysis_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+// Add event listener for analytics export button
+document.getElementById('exportAnalytics').addEventListener('click', exportAnalyticsReport);

@@ -21,7 +21,7 @@ checkRole(['admin', 'manager']);
   <!-- Custom Styles -->
   <link rel="stylesheet" href="../systemStyles/styles.css?v=<?php echo time(); ?>" />
   <link rel="stylesheet" href="financeStyles.css?v=<?php echo time(); ?>" />
-  </head>
+</head>
 
 <body>
   <?php include '../1nav/aside.php'; ?>
@@ -30,55 +30,106 @@ checkRole(['admin', 'manager']);
     <div class="text-center">
       <h1>Data Analytics</h1>
     </div>
+    <div class="text-end">
+    <button id="exportAnalytics" class="btn btn-success mb-3">
+        <i class="fas fa-file-export"></i> Export Analytics Report
+      </button>
+    </div>
 
     <div class="row">
       <div class="col-12 col-md-8 col-lg-8 col-xl-6">
-        <label for="aggregationSelect" class="form-label">Total Revenue Over Time</label>
+        <div class="d-flex justify-content-between align-items-center">
+          <label for="aggregationSelect" class="form-label">Total Revenue Over Time</label>
+          <button class="btn btn-sm btn-outline-success" onclick="exportRevenueData()">
+            <i class="fas fa-file-excel"></i> Export
+          </button>
+        </div>
         <select class="form-control w-auto" id="aggregationSelect" onchange="initializeChartForTotalRevenue()">
           <option value="daily">Daily</option>
           <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
         </select>
         <canvas id="revenueChart" class="w-100"></canvas>
+        <div class="interpretation-box mb-3">
+          <h5>Interpretation: </h5>
+          <p id="revenueInterpretation"></p>
+        </div>
       </div>
       <div class="col-12 col-md-8 col-lg-8 col-xl-6">
-        <label for="TableRevSelect" class="form-label">Revenue by Table</label>
+        <div class="d-flex justify-content-between align-items-center">
+          <label for="TableRevSelect" class="form-label">Revenue by Table</label>
+          <button class="btn btn-sm btn-outline-success" onclick="exportTableRevenueData()">
+            <i class="fas fa-file-excel"></i> Export
+          </button>
+        </div>
         <select class="form-control w-auto" id="TableRevSelect" onchange="initializeChartForRevenuePertable()">
           <option value="highest">Highest</option>
           <option value="lowest">Lowest</option>
         </select>
-        <canvas id="tableRevenueChart" class="w-100"></canvas> 
+        <canvas id="tableRevenueChart" class="w-100"></canvas>
+        <div class="interpretation-box mb-3">
+          <h5>Interpretation:</h5>
+          <p id="tableRevenueInterpretation"></p>
+        </div>
       </div>
     </div>
 
     <div class="row">
       <div class="col-12 col-md-8 col-lg-6 col-xl-6">
-        <label for="TimerTypeRevChartType" class="form-label">Revenue by Timer Type</label>
-        <select class="form-control w-auto" id="TimerTypeRevChartType" onchange="initializeChartForRevenueByTimerType()">
-        <option value="bar">Bar Chart</option>
+        <div class="d-flex justify-content-between align-items-center">
+          <label for="TimerTypeRevChartType" class="form-label">Revenue by Timer Type</label>
+          <button class="btn btn-sm btn-outline-success" onclick="exportTimerTypeData()">
+            <i class="fas fa-file-excel"></i> Export
+          </button>
+        </div>
+        <select class="form-control w-auto" id="TimerTypeRevChartType"
+          onchange="initializeChartForRevenueByTimerType()">
+          <option value="bar">Bar Chart</option>
           <option value="pie">Pie Chart</option>
         </select>
         <canvas id="TimerTypeRevenueChart" class="w-100"></canvas>
+        <div class="interpretation-box mb-3">
+    <h5>Interpretation:</h5>
+    <p id="timerTypeInterpretation"></p>
+</div>
       </div>
       <div class="col-12 col-md-8 col-lg-8 col-xl-6">
-        <label for="UnpaidBillsAggregated" class="form-label">Unpaid Bills Analysis</label>
+        <div class="d-flex justify-content-between align-items-center">
+          <label for="UnpaidBillsAggregated" class="form-label">Unpaid Bills Analysis</label>
+          <button class="btn btn-sm btn-outline-success" onclick="exportUnpaidBillsData()">
+            <i class="fas fa-file-excel"></i> Export
+          </button>
+        </div>
         <select class="form-control w-auto" id="UnpaidBillsAggregated" onchange="initializeChartForUnpaidBills()">
           <option value="daily">Daily</option>
           <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
         </select>
         <canvas id="UnpaidBillsAnalysisChart" class="w-100"></canvas>
+        <div class="interpretation-box mb-3">
+    <h5>Interpretation:</h5>
+    <p id="unpaidBillsInterpretation"></p>
+</div>
       </div>
     </div>
 
     <div class="utilizationRate row">
       <div class="col-12 col-md-8 col-lg-6 col-xl-6">
-        <label for="typeForUtilizationRate" class="form-label">Utilization Rates</label>
+        <div class="d-flex justify-content-between align-items-center">
+          <label for="typeForUtilizationRate" class="form-label">Utilization Rates</label>
+          <button class="btn btn-sm btn-outline-success" onclick="exportUtilizationData()">
+            <i class="fas fa-file-excel"></i> Export
+          </button>
+        </div>
         <select class="form-control w-auto" id="typeForUtilizationRate" onchange="initializeChartForUtilizationRates()">
           <option value="hourly">Hourly</option>
           <option value="daily">Daily</option>
         </select>
         <canvas id="UtilizationRateChart" class="w-100"></canvas>
+        <div class="interpretation-box mb-3">
+    <h5>Interpretation:</h5>
+    <p id="utilizationRateInterpretation"></p>
+</div>
       </div>
     </div>
     <div class="paddingBottom"></div>
@@ -93,6 +144,8 @@ checkRole(['admin', 'manager']);
   <!-- Custom JS -->
   <script src="../1nav/frontEnd.js"></script>
   <script src="1finance.js"></script>
+  <!-- Add this before your other scripts -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 </body>
 
 </html>

@@ -13,6 +13,7 @@ const resumeTimerButton = document.getElementById("resumeTimer");
 const stopTimerButton = document.getElementById("stopTimer");
 const saveTimerButton = document.getElementById("saveTimer");
 const addTimeButton = document.getElementById("addTimeButton");
+const showReceiptButton = document.getElementById("showReceipt");
 
 // Function to toggle timer type
 const timerTypeRadios = document.querySelectorAll('input[name="timerType"]');
@@ -276,7 +277,7 @@ function initializeTimer(startTime, totalSeconds, timerType, pauseTime, cumulati
           updateTotalTimeUsed(tableId, currentElapsedTime);
 
           // Check for billing interval
-          if (currentElapsedTime % 300 === 0) {
+          if (currentElapsedTime % 10 === 0) {
             const price = calculateOpenTimePrice(currentElapsedTime);
             addBillingLogOpenTime(tableId, price);
           }
@@ -388,6 +389,8 @@ function updateExpectedEndTime(tableId) {
   if (modalExpectedEnd && timerId === tableId) {
       modalExpectedEnd.textContent = newExpectedEnd;
   }
+
+  return newExpectedEnd;
 }
 
 
@@ -479,6 +482,7 @@ function updateModal(button) {
     tableNumber,
     startTime
   );
+
   manageButtonStates(status);
   manageTimerTypeFields();
   fetchBillingLogs(timerId);
@@ -564,7 +568,9 @@ stopTimerButton.addEventListener("click", function () {
     cumulativePause: 0, // Reset cumulative pause duration
     notes: "", // Clear notes or set as needed
   });
+  updateTotalTimeUsed(timerId, 0);
   document.getElementById("noteInput").value = "";
+  document.getElementById("endTime").textContent = "N/A";
   console.log("Timer reset and session saved.");
 });
 
@@ -684,8 +690,6 @@ saveTimerButton.addEventListener("click", function (){
   }])
 });
 
-
-
 addTimeButton.addEventListener("click", function () {
   console.log("Add Time button clicked");
 
@@ -746,6 +750,108 @@ addTimeButton.addEventListener("click", function () {
     addBillingLogEntry(additionalTimeInSeconds);
   }
 });
+
+showReceiptButton.addEventListener("click", function () {
+  generateReceipt();
+});
+
+function generateReceipt() {
+  
+  const tableNumber = tableNumberMap.get(timerId);
+  const startTime = startTimeMap.get(timerId);
+  // const timerType = timerTypeMap.get(timerId);
+  const endTime = updateExpectedEndTime(timerId);
+  console.log("endTime receipt", endTime);
+
+  // Format current date
+      const currentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+  });
+
+  document.getElementById('receiptTableNumber').textContent = tableNumber;
+  document.getElementById('receiptDate').textContent = currentDate;
+  document.getElementById('receiptStartTime').textContent = formatToAMPM(startTime);
+  document.getElementById('receiptEndTime').textContent = endTime;
+
+  // Populate billing details
+  const billingDetailsBody = document.getElementById('receiptBillingDetails');
+  billingDetailsBody.innerHTML = '';
+  
+  billingLogs.forEach(log => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+          <td>${formatToAMPM(log.timestamp)}</td>
+          <td>₱${log.price}</td>
+          <td>${log.paid ? 'Paid' : 'Unpaid'}</td>
+      `;
+      billingDetailsBody.appendChild(row);
+  });
+
+  // Set total amount
+  document.getElementById('receiptTotalAmount').textContent = `₱${calculateAllTotal()}`;
+
+  // Show the receipt modal
+  const receiptModal = new bootstrap.Modal(document.getElementById('receiptModal'));
+  receiptModal.show();
+}
+
+document.getElementById('printReceipt').addEventListener('click', function () {
+  const receiptContent = document.getElementById('receiptContent').innerHTML;
+  const printWindow = window.open('', '', 'height=600,width=800');
+  
+  printWindow.document.write(`
+      <html>
+          <head>
+              <title>Receipt</title>
+              <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+              <style>
+                  body { 
+                      padding: 10px;
+                  }
+                  .container {
+                      transform: scale(1.4);
+                      transform-origin: top center;
+                      margin-top: 20px;
+                      width: 70% !important;
+                      margin-left: auto;
+                      margin-right: auto;
+                  }
+                  /* Add the specific table header color */
+                  thead {
+                      background-color: #CBD2A4 !important;
+                  }
+                  /* Ensure colors print correctly */
+                  @media print {
+                      .no-print { display: none; }
+                      thead {
+                          background-color: #CBD2A4 !important;
+                          -webkit-print-color-adjust: exact;
+                          print-color-adjust: exact;
+                      }
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  ${receiptContent}
+              </div>
+              <script>
+                  window.onload = function() {
+                      window.print();
+                      window.onafterprint = function() {
+                          window.close();
+                      }
+                  }
+              </script>
+          </body>
+      </html>
+  `);
+  
+  printWindow.document.close();
+});
+
 
 // Pad single digits with leading zeros
 function pad(num) {
@@ -817,22 +923,23 @@ function formatToAMPM(dateTimeString) {
 }
 
 function manageButtonStates(status) {
+
   const startButton = document.getElementById("startTimer");
   const pauseButton = document.getElementById("pauseTimer");
   const resumeButton = document.getElementById("resumeTimer");
   const stopButton = document.getElementById("stopTimer");
   const saveTimer = document.getElementById("saveTimer");
-
+  const showReceipt = document.getElementById("showReceipt");
   const regularTimeRadio = document.getElementById("regularTime");
   const openTimeRadio = document.getElementById("openTime");
   // conditional statement depending on the status value
-
   if (status === "active") {
     startButton.disabled = true; // Timer is already running
     pauseButton.disabled = false; // Enable pause
     resumeButton.disabled = true; // Cannot resume if already active
     stopButton.disabled = false; // Enable stop
     saveTimer.disabled = false; // Enable stop
+    showReceipt.disabled = false; // Enable Receipt
     regularTimeRadio.disabled = true;
     openTimeRadio.disabled = true;
 
@@ -852,6 +959,8 @@ function manageButtonStates(status) {
     stopButton.disabled = false; // Enable stop
     regularTimeRadio.disabled = false;
     openTimeRadio.disabled = false;
+    showReceipt.disabled = true;
+    saveTimer.disabled = true;
   } else if (status === "finished") {
     // in this case this is finished
     startButton.disabled = true; // Timer is already running
@@ -1175,7 +1284,7 @@ function calculateOpenTimePrice(elapsedSeconds) {
             }
         }
     }
-
+  
     return price;
 }
 

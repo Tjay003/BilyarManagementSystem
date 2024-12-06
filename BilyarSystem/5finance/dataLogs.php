@@ -26,15 +26,19 @@ checkRole(['admin', 'manager']);
 
 <body>
     <?php include '../1nav/aside.php'; ?>
-
+    
     <main class="datalogs">
         <div class="text-center">
             <h1>Data Logs</h1>
+            <button id="exportToExcel" class="btn btn-success mb-3 float-end">
+                <i class="fas fa-file-excel"></i> Export to Excel
+            </button>
         </div>
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>Session Id</th>
+                    <th>Tabe Number</th>
                     <th>
                         Start Time
                         <button onclick="sortTable('startTime')" id="startTimeSortBtn"
@@ -122,6 +126,32 @@ checkRole(['admin', 'manager']);
     <!-- Custom JS -->
     <script src="../1nav/frontEnd.js"></script>
     <script src="3dataLogs.js"></script>
+
+    <!-- Export Preview Modal -->
+    <div class="modal fade" id="exportPreviewModal" tabindex="-1" aria-labelledby="exportPreviewModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exportPreviewModalLabel">Export Preview</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-bordered">
+                <thead id="previewHeader"></thead>
+                <tbody id="previewBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-success" id="confirmExport">
+              <i class="fas fa-file-excel"></i> Confirm Export
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 </body>
 
 </html>
