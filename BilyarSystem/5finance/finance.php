@@ -143,7 +143,9 @@ checkRole(['admin', 'manager']);
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <!-- Custom JS -->
   <script src="../1nav/frontEnd.js"></script>
+  <script src="1ApredictiveAnalysis.js"></script>
   <script src="1finance.js"></script>
+
   <!-- Add this before your other scripts -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 </body>

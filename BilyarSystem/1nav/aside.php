@@ -61,6 +61,9 @@ $settingsPages = ['employeeManagement.php', 'registration.php', 'tableSettings.p
           <li class="<?= $current_page == 'dataLogs.php' ? 'active' : '' ?> sidebar-item">
             <a href="/Bilyar4/BilyarSystem/5finance/dataLogs.php">Data Logs</a>
           </li>
+          <li class="<?= $current_page == 'predictiveAnalysis.php' ? 'active' : '' ?> sidebar-item">
+            <a href="/Bilyar4/BilyarSystem/5finance/predictiveAnalysis.php">Predictive Analysis</a>
+          </li>
         </div>
       </ul>
     </li>

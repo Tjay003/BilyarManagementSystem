@@ -4,6 +4,7 @@ let chartInstanceForRevenueByTimerType ;
 let chartInstanceForUnpaidAnalysis;
 let chartInstanceForUtilizationRate;
 
+console.log("finance js has been loaded");
 
 async function fetchSessionData() {
     try {
