@@ -32,21 +32,23 @@ require_once '../1nav/sessionCheck.php';
 
   <main>
     <div class="tableManagement">
-      <div><h2 class="text-center">Table Management</h2></div>
+      <div>
+        <h2 class="text-center">Table Management</h2>
+      </div>
       <div class="dropdown mb-3">
-      <select class="form-select" id="sortSelect" style="width: 200px;">
-        <option value="default">Default Sort</option>
-        <option value="tableNumber">Sort by Table Number</option>
-        <option value="openTime">Sort by Open Time</option>
-        <option value="endingSoon">Sort by Ending Soon</option>
-        <option value="status">Sort by Status</option>
-      </select>
-    </div>
+        <select class="form-select" id="sortSelect" style="width: 200px;">
+          <option value="default">Default Sort</option>
+          <option value="tableNumber">Sort by Table Number</option>
+          <option value="openTime">Sort by Open Time</option>
+          <option value="endingSoon">Sort by Ending Soon</option>
+          <option value="status">Sort by Status</option>
+        </select>
+      </div>
       <div class="timerContent row clearfix" id="tableCards">
         <!-- Cards will be populated using JavaScript -->
       </div>
     </div>
-    
+
 
     <div class="modal fade" id="timerModal" tabindex="-1" aria-labelledby="timerModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;"> <!-- Adjust max-width -->
@@ -193,81 +195,85 @@ require_once '../1nav/sessionCheck.php';
 
     <!-- Delete Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+      <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete this log?</p>
-                <input type="hidden" id="confirmDeleteLogId" />
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
-            </div>
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to delete this log?</p>
+            <input type="hidden" id="confirmDeleteLogId" />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+          </div>
         </div>
-    </div>
+      </div>
     </div>
 
     <!-- Receipt Modal -->
     <div class="modal fade" id="receiptModal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="receiptModalLabel">Receipt</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="receiptContent">
-                    <div class="text-center mb-3">
-                        <!-- Logo container -->
-                        <div class="logo-img">
-                            <img src="../../images/logo/2transparentPng.png" alt="Better Billiards Logo" style="max-width: 150px; height: auto;">
-                        </div>
-                        <!-- Business details -->
-                        <h4 class="mb-2">Better Billiards Game Center</h4>
-                        <p class="mb-3" style="font-size: 0.9em;">478 San Juan de Letran, Intramuros, Manila</p>
-                        <div class="d-flex justify-content-between mb-2">
-                            <p class="mb-0"><strong>Receipt for Table # </strong> <span id="receiptTableNumber"></span></p>
-                            <p class="mb-0"><strong>Date: </strong><span id="receiptDate"></span></p>
-                        </div>
-                        <hr class="my-1" style="border-top: 3px solid #CBD2A4">
-                    </div>
-                    <div class="mb-3">
-                        <p class="mb-1"><strong>Start Time: </strong><span id="receiptStartTime"></span></p>
-                        <p class="mb-1"><strong>Expected End Time: </strong><span id="receiptEndTime"></span></p>
-                    </div>
-                    <div class="mb-3">
-                        <h6>Billing Details:</h6>
-                        <table class="table">
-                            <thead style="background-color: #CBD2A4;">
-                                <tr>
-                                    <th>TimeStamps</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="receiptBillingDetails">
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="1" class="text-end"><strong>Total Amount:</strong></td>
-                                    <td id="receiptTotalAmount"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    <div class="d-flex justify-content-end mt-5">
-                      <p class="fw-bold mb-0">Thank You for Playing at Better Billiards!</p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary " id="printReceipt">Print Receipt</button>
-                </div>
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="receiptModalLabel">Receipt</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="receiptContent">
+            <div class="text-center mb-3">
+              <!-- Logo container -->
+              <div class="logo-img">
+                <img src="../../images/logo/2transparentPng.png" alt="Better Billiards Logo"
+                  style="max-width: 150px; height: auto;">
+              </div>
+              <!-- Business details -->
+              <h4 class="mb-2">Better Billiards Game Center</h4>
+              <p class="mb-3" style="font-size: 0.9em;">478 San Juan de Letran, Intramuros, Manila</p>
+              <div class="d-flex justify-content-between mb-2">
+                <p class="mb-0"><strong>Receipt for Table # </strong> <span id="receiptTableNumber"></span></p>
+                <p class="mb-0"><strong>Date: </strong><span id="receiptDate"></span></p>
+              </div>
+              <hr class="my-1" style="border-top: 3px solid #CBD2A4">
             </div>
+            <div class="mb-3">
+              <p class="mb-1"><strong>Receipt ID: </strong><span id="receiptId"></span></p>
+            </div>
+            <div class="mb-3">
+              <p class="mb-1"><strong>Start Time: </strong><span id="receiptStartTime"></span></p>
+              <p class="mb-1"><strong>Expected End Time: </strong><span id="receiptEndTime"></span></p>
+            </div>
+            <div class="mb-3">
+              <h6>Billing Details:</h6>
+              <table class="table">
+                <thead style="background-color: #CBD2A4;">
+                  <tr>
+                    <th>TimeStamps</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="receiptBillingDetails">
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="1" class="text-end"><strong>Total Amount:</strong></td>
+                    <td id="receiptTotalAmount"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <div class="d-flex justify-content-end mt-5">
+              <p class="fw-bold mb-0">Thank You for Playing at Better Billiards!</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary " id="printReceipt">Print Receipt</button>
+          </div>
         </div>
+      </div>
     </div>
 
 

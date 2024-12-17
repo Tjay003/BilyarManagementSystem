@@ -30,15 +30,51 @@ checkRole(['admin', 'manager']);
     <main class="datalogs">
         <div class="text-center">
             <h1>Data Logs</h1>
-            <button id="exportToExcel" class="btn btn-success mb-3 float-end">
+            <div class="row">
+              <div class="col-3">
+              <input type="text" id="searchInput" class="form-control" placeholder="Search by Table Number or Session ID">
+              </div>
+              <div class="col-2">
+              <input type="date" id="dateFilter" class="form-control">
+              </div>
+              <div class="col-2">
+              <select id="monthFilter" class="form-control">
+        <option value="">Select Month</option>
+        <option value="0">January</option>
+        <option value="1">February</option>
+        <option value="2">March</option>
+        <option value="3">April</option>
+        <option value="4">May</option>
+        <option value="5">June</option>
+        <option value="6">July</option>
+        <option value="7">August</option>
+        <option value="8">September</option>
+        <option value="9">October</option>
+        <option value="10">November</option>
+        <option value="11">December</option>
+    </select>
+              </div>
+              <div class="col-2">
+              <select id="yearFilter" class="form-control">
+        <option value="">Select Year</option>
+        <!-- You can dynamically generate these options based on your data -->
+        <option value="2024">2024</option>
+        <!-- Add more years as needed -->
+    </select>
+              </div>
+              <div class="col-3">
+              <button id="exportToExcel" class="btn btn-success mb-3 float-end">
                 <i class="fas fa-file-excel"></i> Export to Excel
             </button>
+              </div>
+            </div>
+           
         </div>
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
                     <th>Session Id</th>
-                    <th>Tabe Number</th>
+                    <th>Table Number</th>
                     <th>
                         Start Time
                         <button onclick="sortTable('startTime')" id="startTimeSortBtn"
@@ -78,6 +114,7 @@ checkRole(['admin', 'manager']);
       <div class="modal-header">
         <h5 class="modal-title" id="userModalLabel">Logs Details</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        
       </div>
       <div class="modal-body">
         <form>

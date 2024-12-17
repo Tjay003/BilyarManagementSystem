@@ -769,12 +769,13 @@ function generateReceipt() {
         month: 'long',
         day: 'numeric'
   });
-
+  const receiptId = formatReceiptId(startTime);
   document.getElementById('receiptTableNumber').textContent = tableNumber;
   document.getElementById('receiptDate').textContent = currentDate;
   document.getElementById('receiptStartTime').textContent = formatToAMPM(startTime);
   document.getElementById('receiptEndTime').textContent = endTime;
-
+  document.getElementById('receiptId').textContent = receiptId;
+  
   // Populate billing details
   const billingDetailsBody = document.getElementById('receiptBillingDetails');
   billingDetailsBody.innerHTML = '';
@@ -863,6 +864,19 @@ timerTypeRadios.forEach((radio) => {
     manageTimerTypeFields();
   });
 });
+
+// Function to format the receipt ID from start time
+function formatReceiptId(startTime) {
+  const date = new Date(startTime);
+  const year = date.getFullYear().toString();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+
+  return `${year}${month}${day}${hours}${minutes}${seconds}`;
+}
 
 // Function to manage the visibility of timer type fields
 function manageTimerTypeFields() {

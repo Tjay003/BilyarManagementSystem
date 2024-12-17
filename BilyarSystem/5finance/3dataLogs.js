@@ -40,8 +40,10 @@ function renderTableInfo(tables) {
     paginatedTables.forEach((table, index) => {
         const formattedStartTime = formatDateTime(table.startTime);
         const formattedSavedTime = formatDateTime(table.savedTime);
+        const newSessionID = formatSessionId(table.startTime)
+        console.log("newSessionId", newSessionID);
         const row = `<tr id="tableRow-${table.sessionID}">
-                        <td>${table.sessionID}</td>
+                        <td>${newSessionID}</td>
                         <td>${table.tableNumber}</td>
                         <td>${formattedStartTime}</td>
                         <td>${formattedSavedTime}</td>
@@ -87,6 +89,19 @@ function renderTableInfo(tables) {
         });
       });
 }
+
+// Function to format the receipt ID from start time
+function formatSessionId(startTime) {
+    const date = new Date(startTime);
+    const year = date.getFullYear().toString();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+  
+    return `${year}${month}${day}${hours}${minutes}${seconds}`;
+  }
 
 document.getElementById("updateButton").addEventListener("click", function () {
     // Get the values from the modal form
@@ -162,7 +177,12 @@ function renderPagination() {
     if (totalPages > 1) { // Only display pagination if more than one page
         pagination.innerHTML += '<li class="page-item"><a class="page-link" href="#" id="prev">Previous</a></li>';
 
-        for (let i = 1; i <= totalPages; i++) {
+        // Show only a subset of pagination links
+        const maxVisiblePages = 5; // Number of visible page links
+        const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        for (let i = startPage; i <= endPage; i++) {
             pagination.innerHTML += `<li class="page-item ${currentPage === i ? 'active' : ''}">
                 <a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
         }
@@ -174,7 +194,7 @@ function renderPagination() {
             link.addEventListener('click', function (e) {
                 e.preventDefault();
                 currentPage = parseInt(this.getAttribute('data-page'));
-                renderTableInfo(tables);
+                renderFilteredTableInfo(); // Use filtered data
             });
         });
 
@@ -183,7 +203,7 @@ function renderPagination() {
             e.preventDefault();
             if (currentPage > 1) {
                 currentPage--;
-                renderTableInfo(tables);
+                renderFilteredTableInfo(); // Use filtered data
             }
         });
 
@@ -191,7 +211,7 @@ function renderPagination() {
             e.preventDefault();
             if (currentPage < totalPages) {
                 currentPage++;
-                renderTableInfo(tables);
+                renderFilteredTableInfo(); // Use filtered data
             }
         });
     }
@@ -263,7 +283,7 @@ function showExportPreview() {
     // Create preview rows (showing first 5 entries)
     previewBody.innerHTML = tables.slice(0, 5).map(table => `
         <tr>  
-            <td>${table.sessionID}</td>
+            <td>${formatSessionId(table.startTime)}</td>
             <td>${table.tableNumber}</td>
             <td>${formatDateTime(table.startTime)}</td>
             <td>${formatDateTime(table.savedTime)}</td>
@@ -293,7 +313,7 @@ function exportToExcel() {
     tables.forEach(table => {
         const formattedStartTime = formatDateTime(table.startTime);
         const formattedSavedTime = formatDateTime(table.savedTime);
-        
+        const formattedSessionID = formatSessionId(table.startTime); // Corrected function name
         // Escape values that might contain commas by wrapping them in quotes
         const escapeCsvValue = (value) => {
             if (value === null || value === undefined) return '""';
@@ -301,7 +321,7 @@ function exportToExcel() {
         };
         
         const row = [
-            escapeCsvValue(table.sessionID),
+            escapeCsvValue(formattedSessionID),
             escapeCsvValue(table.tableNumber),
             escapeCsvValue(formattedStartTime),
             escapeCsvValue(formattedSavedTime),
@@ -342,3 +362,50 @@ document.addEventListener("DOMContentLoaded", function() {
     // Add listener for the confirm export button
     document.getElementById("confirmExport").addEventListener("click", exportToExcel);
 });
+
+// Add search input and date filter elements in your HTML
+// Add this inside your <main> tag, above the table
+
+
+// Add event listeners for search and date filter
+document.getElementById("searchInput").addEventListener("input", function() {
+    currentPage = 1; // Reset to first page on search
+    renderFilteredTableInfo();
+});
+
+document.getElementById("dateFilter").addEventListener("change", function() {
+    currentPage = 1; // Reset to first page on date filter
+    renderFilteredTableInfo();
+});
+
+// Add event listener for month and year filters
+document.getElementById("monthFilter").addEventListener("change", function() {
+    currentPage = 1; // Reset to first page on month filter
+    renderFilteredTableInfo();
+});
+
+document.getElementById("yearFilter").addEventListener("change", function() {
+    currentPage = 1; // Reset to first page on year filter
+    renderFilteredTableInfo();
+});
+// Update the renderFilteredTableInfo function
+function renderFilteredTableInfo() {
+    const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+    const selectedMonth = document.getElementById("monthFilter").value;
+    const selectedYear = document.getElementById("yearFilter").value;
+    const selectedDate = document.getElementById("dateFilter").value; // Get the selected date
+
+    const filteredTables = tables.filter(table => {
+        const matchesSearch = table.tableNumber.toString().includes(searchTerm) || 
+                              formatSessionId(table.startTime).includes(searchTerm);
+        const tableDate = new Date(table.startTime);
+        const matchesMonth = selectedMonth ? tableDate.getMonth() === parseInt(selectedMonth) : true;
+        const matchesYear = selectedYear ? tableDate.getFullYear() === parseInt(selectedYear) : true;
+        const matchesDate = selectedDate ? tableDate.toISOString().split('T')[0] === selectedDate : true; // Compare dates
+
+        return matchesSearch && matchesMonth && matchesYear && matchesDate;
+    });
+
+    totalPages = Math.ceil(filteredTables.length / itemsPerPage);
+    renderTableInfo(filteredTables);
+}
